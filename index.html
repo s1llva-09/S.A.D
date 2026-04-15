@@ -63,6 +63,9 @@
                         <button
                             type="button"
                             class="toggle-password"
+                            data-target="#senha"
+                            data-open-icon="assets/icons/icon-eye-open.svg"
+                            data-closed-icon="assets/icons/icon-eye-closed.svg"
                             aria-label="Mostrar senha"
                             aria-pressed="false"
                         >
@@ -83,16 +86,22 @@
                     <a href="#">Precisa de ajuda para acessar?</a>
                 </div>
 
+                <p class="form-message" id="login-message" role="status" aria-live="polite"></p>
+
                 <button type="submit" class="submit-button">
                     Entrar
                 </button>
+
+                <p class="auth-switch">
+                    Ainda nao tem conta?
+                    <a href="cadastro.html">Criar cadastro</a>
+                </p>
             </form>
         </section>
     </main>
 
-    <script src="scripts/login.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="scripts/supabase-client.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="scripts/supabase-client.js" defer></script>
     <script src="scripts/login.js" defer></script>
 </body>
 </html>

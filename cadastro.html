@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P.O.N.T.E | Cadastro</title>
+    <link rel="stylesheet" href="styles/index.css">
+</head>
+<body>
+    <main class="login-page">
+        <section class="login-card" aria-labelledby="signup-title">
+            <header class="brand-block">
+                <img
+                    src="assets/logo-ponte-v5-simbolo.svg"
+                    alt="Simbolo do P.O.N.T.E"
+                    class="brand-logo"
+                    width="80"
+                    height="80"
+                >
+                <h1 id="signup-title">Criar cadastro</h1>
+                <p>Registre seu acesso para acompanhar e abrir demandas de suporte interno.</p>
+            </header>
+
+            <form class="login-form signup-form" action="#" method="post">
+                <fieldset class="access-type">
+                    <legend>Perfil de acesso</legend>
+                    <div class="access-options">
+                        <label class="access-option" for="cadastro-colaborador">
+                            <input
+                                id="cadastro-colaborador"
+                                name="access_type"
+                                type="radio"
+                                value="colaborador"
+                                checked
+                            >
+                            <span class="access-icon" aria-hidden="true">
+                                <img src="assets/icons/icon-person.svg" alt="">
+                            </span>
+                            <span class="access-copy">Colaborador</span>
+                        </label>
+
+                        <label class="access-option is-disabled" for="cadastro-setor-interno">
+                            <input
+                                id="cadastro-setor-interno"
+                                name="access_type"
+                                type="radio"
+                                value="setor-interno"
+                                disabled
+                            >
+                            <span class="access-icon" aria-hidden="true">
+                                <img src="assets/icons/icon-shield.svg" alt="">
+                            </span>
+                            <span class="access-copy">Setor interno</span>
+                        </label>
+                    </div>
+                    <p class="access-note">Contas de setor interno sao liberadas pelo administrador.</p>
+                </fieldset>
+
+                <div class="field">
+                    <label for="nome">Nome completo</label>
+                    <input id="nome" name="nome" type="text" autocomplete="name" placeholder="Seu nome completo" required>
+                </div>
+
+                <div class="field">
+                    <label for="signup-email">Email corporativo</label>
+                    <input
+                        id="signup-email"
+                        name="email"
+                        type="email"
+                        autocomplete="email"
+                        placeholder="nome@empresa.com"
+                        required
+                    >
+                </div>
+
+                <div class="field">
+                    <label for="signup-password">Senha</label>
+                    <div class="password-wrapper">
+                        <input
+                            id="signup-password"
+                            name="password"
+                            type="password"
+                            autocomplete="new-password"
+                            placeholder="Crie uma senha"
+                            required
+                        >
+                        <button
+                            type="button"
+                            class="toggle-password"
+                            data-target="#signup-password"
+                            data-open-icon="assets/icons/icon-eye-open.svg"
+                            data-closed-icon="assets/icons/icon-eye-closed.svg"
+                            aria-label="Mostrar senha"
+                            aria-pressed="false"
+                        >
+                            <img
+                                src="assets/icons/icon-eye-closed.svg"
+                                alt=""
+                                class="toggle-password-icon"
+                                width="20"
+                                height="20"
+                            >
+                            <span class="sr-only">Mostrar senha</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="signup-confirm-password">Confirmar senha</label>
+                    <div class="password-wrapper">
+                        <input
+                            id="signup-confirm-password"
+                            name="confirm_password"
+                            type="password"
+                            autocomplete="new-password"
+                            placeholder="Repita sua senha"
+                            required
+                        >
+                        <button
+                            type="button"
+                            class="toggle-password"
+                            data-target="#signup-confirm-password"
+                            data-open-icon="assets/icons/icon-eye-open.svg"
+                            data-closed-icon="assets/icons/icon-eye-closed.svg"
+                            aria-label="Mostrar senha"
+                            aria-pressed="false"
+                        >
+                            <img
+                                src="assets/icons/icon-eye-closed.svg"
+                                alt=""
+                                class="toggle-password-icon"
+                                width="20"
+                                height="20"
+                            >
+                            <span class="sr-only">Mostrar senha</span>
+                        </button>
+                    </div>
+                </div>
+
+                <p class="form-message" id="signup-message" role="status" aria-live="polite"></p>
+
+                <button type="submit" class="submit-button">
+                    Criar conta
+                </button>
+
+                <p class="auth-switch">
+                    Ja tem conta?
+                    <a href="index.html">Voltar para login</a>
+                </p>
+            </form>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="scripts/supabase-client.js" defer></script>
+    <script src="scripts/cadastro.js" defer></script>
+</body>
+</html>

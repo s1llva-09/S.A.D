@@ -1,47 +1,113 @@
-const togglePasswordButton = document.querySelector(".toggle-password");
-const togglePasswordIcon = document.querySelector(".toggle-password-icon");
-const togglePasswordText = document.querySelector(".toggle-password .sr-only");
+const supabase = window.supabaseClient;
+const loginForm = document.querySelector(".login-form");
+const emailInput = document.querySelector("#email");
+const passwordInput = document.querySelector("#senha");
+const loginMessage = document.querySelector("#login-message");
+const submitButton = loginForm?.querySelector(".submit-button");
 
-if (passwordInput && togglePasswordButton && togglePasswordIcon && togglePasswordText) {
-    togglePasswordButton.addEventListener("click", () => {
-        const isPasswordHidden = passwordInput.type === "password";
+function setFormMessage(element, message, type = "") {
+    if (!element) {
+        return;
+    }
 
-        passwordInput.type = isPasswordHidden ? "text" : "password";
-        togglePasswordButton.setAttribute("aria-pressed", String(isPasswordHidden));
-        togglePasswordButton.setAttribute(
-            "aria-label",
-            isPasswordHidden ? "Ocultar senha" : "Mostrar senha"
-        );
-        togglePasswordText.textContent = isPasswordHidden ? "Ocultar senha" : "Mostrar senha";
-        togglePasswordIcon.src = isPasswordHidden
-            ? "assets/icons/icon-eye-open.svg"
-            : "assets/icons/icon-eye-closed.svg";
+    element.textContent = message;
+    element.classList.remove("is-error", "is-success");
+
+    if (type) {
+        element.classList.add(`is-${type}`);
+    }
+}
+
+function getSelectedAccessType() {
+    return document.querySelector('input[name="access_type"]:checked')?.value ?? "colaborador";
+}
+
+function getDestinationForRole(role) {
+    return role === "setor-interno" ? "setor-interno.html" : "colaborador-chat.html";
+}
+
+function setupPasswordToggle(button) {
+    const inputSelector = button.dataset.target;
+    const targetInput = document.querySelector(inputSelector);
+    const icon = button.querySelector(".toggle-password-icon");
+    const srText = button.querySelector(".sr-only");
+
+    if (!targetInput || !icon || !srText) {
+        return;
+    }
+
+    const openIcon = button.dataset.openIcon;
+    const closedIcon = button.dataset.closedIcon;
+
+    button.addEventListener("click", () => {
+        const isHidden = targetInput.type === "password";
+
+        targetInput.type = isHidden ? "text" : "password";
+        button.setAttribute("aria-pressed", String(isHidden));
+        button.setAttribute("aria-label", isHidden ? "Ocultar senha" : "Mostrar senha");
+        srText.textContent = isHidden ? "Ocultar senha" : "Mostrar senha";
+        icon.src = isHidden ? openIcon : closedIcon;
     });
 }
 
-//AREA LOGIN SUPABASE
-const loginForm = document.querySelector(".login-form") //Formulario de login
-const emailInput = document.querySelector("#email") //email
-const passwordInput = document.querySelector("#senha") //senha
-const supabase = window.supabaseClient //Também pegue o client:
+document.querySelectorAll(".toggle-password").forEach(setupPasswordToggle);
+
+async function redirectIfSessionExists() {
+    if (!supabase) {
+        return;
+    }
+
+    const { data, error } = await supabase.auth.getSession();
+
+    if (error || !data.session) {
+        return;
+    }
+
+    const role = data.session.user?.user_metadata?.role ?? "colaborador";
+    window.location.href = getDestinationForRole(role);
+}
+
+redirectIfSessionExists();
 
 if (loginForm && emailInput && passwordInput && supabase) {
     loginForm.addEventListener("submit", async (event) => {
-        event.preventDefault()
+        event.preventDefault();
 
-        const email = emailInput.value.trim()
-        const password = passwordInput.value
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        const selectedAccessType = getSelectedAccessType();
 
-        const { data, error } = await supabase.auth.signInWithPassword ({
-            email, password
-        })
+        submitButton.disabled = true;
+        submitButton.textContent = "Entrando...";
+        setFormMessage(loginMessage, "Validando seu acesso...");
 
-        if(error) {
-            console.error(error.message)
-            alert("Email ou senha invalidos!")
-            return
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+        });
+
+        if (error) {
+            submitButton.disabled = false;
+            submitButton.textContent = "Entrar";
+            setFormMessage(loginMessage, "Email ou senha invalidos.", "error");
+            return;
         }
 
-        console.log("Login realizado com sucesso", data)
-    })
+        const userRole = data.user?.user_metadata?.role ?? "colaborador";
+
+        if (selectedAccessType !== userRole) {
+            await supabase.auth.signOut();
+            submitButton.disabled = false;
+            submitButton.textContent = "Entrar";
+            setFormMessage(
+                loginMessage,
+                "Este usuario nao corresponde ao perfil selecionado.",
+                "error"
+            );
+            return;
+        }
+
+        setFormMessage(loginMessage, "Login realizado com sucesso. Redirecionando...", "success");
+        window.location.href = getDestinationForRole(userRole);
+    });
 }
