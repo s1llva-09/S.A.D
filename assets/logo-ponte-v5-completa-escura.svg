@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
+  <defs>
+    <linearGradient id="bg-dark" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1B2A22"/>
+      <stop offset="100%" stop-color="#162420"/>
+    </linearGradient>
+    <linearGradient id="bridge-dark" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#52B788"/>
+      <stop offset="100%" stop-color="#74C69D"/>
+    </linearGradient>
+    <linearGradient id="accent-dark" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#52B788"/>
+      <stop offset="100%" stop-color="#95D5B2"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="500" height="500" fill="url(#bg-dark)" rx="20"/>
+
+  <g transform="translate(0,-10)">
+    <circle cx="250" cy="170" r="125" fill="none" stroke="url(#bridge-dark)" stroke-width="2" opacity="0.3"/>
+
+    <path d="M160 200 Q190 120 250 105 Q310 120 340 200"
+          fill="none" stroke="url(#bridge-dark)" stroke-width="4" stroke-linecap="round"/>
+
+    <line x1="148" y1="200" x2="352" y2="200" stroke="#52B788" stroke-width="2" opacity="0.25" stroke-linecap="round"/>
+
+    <line x1="160" y1="190" x2="160" y2="200" stroke="#74C69D" stroke-width="1.5" opacity="0.3"/>
+    <line x1="205" y1="155" x2="205" y2="200" stroke="#74C69D" stroke-width="1.5" opacity="0.3"/>
+    <line x1="250" y1="130" x2="250" y2="200" stroke="#74C69D" stroke-width="1.5" opacity="0.25"/>
+    <line x1="295" y1="155" x2="295" y2="200" stroke="#74C69D" stroke-width="1.5" opacity="0.3"/>
+    <line x1="340" y1="190" x2="340" y2="200" stroke="#74C69D" stroke-width="1.5" opacity="0.3"/>
+
+    <path d="M250 88 L253 98 L263 98 L255 104 L258 114 L250 108 L242 114 L245 104 L237 98 L247 98 Z"
+          fill="#D4A017" opacity="0.65"/>
+
+    <circle cx="155" cy="205" r="5" fill="#52B788" opacity="0.6"/>
+    <circle cx="345" cy="205" r="5" fill="#74C69D" opacity="0.6"/>
+  </g>
+
+  <text x="250" y="355" text-anchor="middle" font-family="Arial,Helvetica,sans-serif"
+        font-size="44" font-weight="bold" fill="#D8F3DC" letter-spacing="4">P.O.N.T.E</text>
+
+  <rect x="210" y="370" width="80" height="2" fill="url(#accent-dark)" rx="1" opacity="0.6"/>
+</svg>

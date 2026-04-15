@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
+  <defs>
+    <linearGradient id="bg3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0D1117"/>
+      <stop offset="100%" style="stop-color:#161B22"/>
+    </linearGradient>
+    <linearGradient id="accent3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#58A6FF"/>
+      <stop offset="100%" style="stop-color:#3FB950"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="500" height="500" fill="url(#bg3)" rx="20"/>
+
+  <!-- Outer circle -->
+  <circle cx="250" cy="170" r="120" fill="none" stroke="url(#accent3)" stroke-width="3" opacity="0.8"/>
+  <circle cx="250" cy="170" r="105" fill="none" stroke="url(#accent3)" stroke-width="1" opacity="0.3"/>
+
+  <!-- Bridge silhouette inside circle -->
+  <path d="M170 190 Q210 140 250 140 Q290 140 330 190" fill="none" stroke="url(#accent3)" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- Two dots (pessoas conectadas) -->
+  <circle cx="170" cy="195" r="8" fill="#58A6FF"/>
+  <circle cx="330" cy="195" r="8" fill="#3FB950"/>
+
+  <!-- Star above -->
+  <path d="M250 100 L255 115 L270 115 L258 125 L262 140 L250 130 L238 140 L242 125 L230 115 L245 115 Z"
+        fill="#F5A623" opacity="0.9"/>
+
+  <!-- Text: P.O.N.T.E -->
+  <text x="250" y="340" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+        font-size="44" font-weight="bold" fill="#FFFFFF" letter-spacing="8">P.O.N.T.E</text>
+
+  <!-- Accent line -->
+  <rect x="180" y="355" width="140" height="3" fill="url(#accent3)" rx="1.5"/>
+
+  <!-- Tagline -->
+  <text x="250" y="385" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+        font-size="12" fill="#8B949E" letter-spacing="5">GUIA · CONEXÃO · CAMINHO</text>
+</svg>

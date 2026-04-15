@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P.O.N.T.E | Login</title>
+    <link rel="stylesheet" href="styles/index.css">
+</head>
+<body>
+    <main class="login-page">
+        <section class="login-card" aria-labelledby="login-title">
+            <header class="brand-block">
+                <img
+                    src="assets/logo-ponte-v5-simbolo.svg"
+                    alt="Simbolo do P.O.N.T.E"
+                    class="brand-logo"
+                    width="80"
+                    height="80"
+                >
+                <h1 id="login-title">P.O.N.T.E</h1>
+                <p>Canal interno para acolher, orientar e encaminhar demandas com clareza.</p>
+            </header>
+
+            <button type="button" class="sso-button">
+                Entrar com conta corporativa
+            </button>
+
+            <div class="divider">
+                <span>ou use seu email</span>
+            </div>
+
+            <form class="login-form" action="#" method="post">
+                <fieldset class="access-type">
+                    <legend>Entrar como:</legend>
+                    <div class="access-options">
+                        <label class="access-option" for="colaborador">
+                            <input id="colaborador" name="access_type" type="radio" value="colaborador" checked>
+                            <span class="access-icon" aria-hidden="true">
+                                <img src="assets/icons/icon-person.svg" alt="">
+                            </span>
+                            <span class="access-copy">Colaborador</span>
+                        </label>
+
+                        <label class="access-option" for="setor-interno">
+                            <input id="setor-interno" name="access_type" type="radio" value="setor-interno">
+                            <span class="access-icon" aria-hidden="true">
+                                <img src="assets/icons/icon-shield.svg" alt="">
+                            </span>
+                            <span class="access-copy">Setor interno</span>
+                        </label>
+                    </div>
+                </fieldset>
+
+                <div class="field">
+                    <label for="email">Email corporativo</label>
+                    <input id="email" name="email" type="email" autocomplete="email" placeholder="nome@empresa.com" required>
+                </div>
+
+                <div class="field">
+                    <label for="senha">Senha</label>
+                    <div class="password-wrapper">
+                        <input id="senha" name="senha" type="password" autocomplete="current-password" placeholder="Insira sua senha" required>
+                        <button
+                            type="button"
+                            class="toggle-password"
+                            aria-label="Mostrar senha"
+                            aria-pressed="false"
+                        >
+                            <img
+                                src="assets/icons/icon-eye-closed.svg"
+                                alt=""
+                                class="toggle-password-icon"
+                                width="20"
+                                height="20"
+                            >
+                            <span class="sr-only">Mostrar senha</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-links">
+                    <a href="#">Esqueci minha senha</a>
+                    <a href="#">Precisa de ajuda para acessar?</a>
+                </div>
+
+                <button type="submit" class="submit-button">
+                    Entrar
+                </button>
+            </form>
+        </section>
+    </main>
+
+    <script src="scripts/login.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="scripts/supabase-client.js"></script>
+    <script src="scripts/login.js" defer></script>
+</body>
+</html>
