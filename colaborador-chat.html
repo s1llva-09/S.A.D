@@ -3,22 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>P.O.N.T.E | ChatIA</title>
+    <title>S.A.D | Colaborador</title>
     <link rel="stylesheet" href="styles/index.css">
 </head>
-<body>
-    <div class="app-shell">
-        <header class="app-header">
+<body class="colaborador-page">
+    <div class="colaborador-shell">
+        <header class="colaborador-header">
             <div class="header-brand">
-                <img src="assets/logo-ponte-v5-simbolo.svg" alt="Logo do P.O.N.T.E" class="header-logo">
+                <img src="assets/logo-ponte-v5-simbolo.svg" alt="Logo S.A.D" class="header-logo" width="46" height="46">
                 <div class="brand-copy">
-                    <strong>P.O.N.T.E</strong>
-                    <span>Assistente de suporte interno</span>
+                    <strong>S.A.D</strong>
+                    <span>Sistema de Auxilios e Demanda</span>
                 </div>
             </div>
 
-            
+            <nav class="header-tabs" aria-label="Navegacao principal do colaborador">
+                <button type="button" class="tab-button is-active" data-view-target="chat">Chat</button>
+                <button type="button" class="tab-button" data-view-target="demandas">Minhas Demandas</button>
+            </nav>
+
+            <div class="header-user">
+                <span class="user-avatar" id="user-avatar">SA</span>
+                <span class="user-name" id="user-name">Carregando...</span>
+                <button type="button" id="logout-button" class="logout-button" aria-label="Sair da conta">Sair</button>
+            </div>
         </header>
+
+        <main class="colaborador-main">
+            <section class="view-panel is-active" data-view-panel="chat" aria-label="Tela de chat com a IA">
+                <div class="chat-thread" id="chat-thread">
+                    <article class="chat-bubble chat-bubble-assistant">
+                        <p>
+                            Ola! Eu sou o assistente do S.A.D. Descreva seu problema para eu classificar,
+                            encaminhar para o setor correto e iniciar o acompanhamento.
+                        </p>
+                    </article>
+                </div>
+
+                <div class="chat-suggestions">
+                    <p>Sugestoes rapidas:</p>
+                    <div class="suggestion-grid">
+                        <button type="button" class="suggestion-chip" data-suggestion="Nao consigo acessar o sistema de ponto.">Nao consigo acessar o sistema de ponto</button>
+                        <button type="button" class="suggestion-chip" data-suggestion="Preciso de adaptacao para deficiencia visual na minha estacao.">Preciso de adaptacao para deficiencia visual</button>
+                        <button type="button" class="suggestion-chip" data-suggestion="Estou com duvida sobre minhas ferias e beneficios.">Duvida sobre minhas ferias</button>
+                        <button type="button" class="suggestion-chip" data-suggestion="Ar-condicionado com defeito na sala 304.">Ar-condicionado com defeito na sala</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="view-panel" data-view-panel="demandas" aria-label="Lista de demandas do colaborador">
+                <header class="demandas-header">
+                    <div>
+                        <h1>Minhas Demandas</h1>
+                        <p>Acompanhe os chamados enviados e os status da IA e dos setores.</p>
+                    </div>
+                    <button type="button" id="new-demanda-button" class="new-demanda-button">Nova demanda</button>
+                </header>
+
+                <div class="demandas-feedback" id="demandas-feedback" role="status" aria-live="polite"></div>
+
+                <div id="demandas-empty" class="demandas-empty">
+                    <p>Nenhuma demanda enviada ainda.</p>
+                    <span>Assim que voce enviar no chat, ela aparece aqui automaticamente.</span>
+                </div>
+
+                <div id="demandas-list" class="demandas-list" aria-live="polite"></div>
+            </section>
+        </main>
+
+        <footer class="chat-composer-wrap">
+            <form id="chat-form" class="chat-composer" autocomplete="off">
+                <input id="chat-input" type="text" placeholder="Descreva seu problema..." maxlength="1200" required>
+                <button id="send-button" type="submit" class="send-button" disabled>Enviar</button>
+            </form>
+            <p class="composer-hint">Enter para enviar. Shift+Enter para nova linha (no futuro com textarea).</p>
+            <p id="chat-feedback" class="chat-feedback" role="status" aria-live="polite"></p>
+        </footer>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="scripts/supabase-client.js" defer></script>
+    <script src="scripts/colaborador-chat.js" defer></script>
 </body>
 </html>

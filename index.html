@@ -3,100 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>P.O.N.T.E | Login</title>
+    <title>S.A.D | Login</title>
     <link rel="stylesheet" href="styles/index.css">
 </head>
-<body>
-    <main class="login-page">
-        <section class="login-card" aria-labelledby="login-title">
-            <header class="brand-block">
-                <img
-                    src="assets/logo-ponte-v5-simbolo.svg"
-                    alt="Simbolo do P.O.N.T.E"
-                    class="brand-logo"
-                    width="80"
-                    height="80"
-                >
-                <h1 id="login-title">P.O.N.T.E</h1>
-                <p>Canal interno para acolher, orientar e encaminhar demandas com clareza.</p>
+<body class="auth-page">
+    <main class="auth-shell login-shell">
+        <section class="auth-side auth-side-login" aria-label="Introducao da plataforma">
+            <header class="side-brand">
+                <img src="assets/logo-ponte-v5-simbolo.svg" alt="Logo S.A.D" class="side-brand-logo" width="52" height="52">
+                <strong>S.A.D</strong>
             </header>
 
-            <button type="button" class="sso-button">
-                Entrar com conta corporativa
-            </button>
-
-            <div class="divider">
-                <span>ou use seu email</span>
+            <div class="side-copy">
+                <h1>
+                    Suporte interno mais
+                    <span>inteligente e acessivel</span>
+                </h1>
+                <p>Classifique, priorize e resolva demandas corporativas com o poder da inteligencia artificial.</p>
             </div>
 
-            <form class="login-form" action="#" method="post">
-                <fieldset class="access-type">
-                    <legend>Entrar como:</legend>
-                    <div class="access-options">
-                        <label class="access-option" for="colaborador">
-                            <input id="colaborador" name="access_type" type="radio" value="colaborador" checked>
-                            <span class="access-icon" aria-hidden="true">
-                                <img src="assets/icons/icon-person.svg" alt="">
-                            </span>
-                            <span class="access-copy">Colaborador</span>
-                        </label>
-
-                        <label class="access-option" for="setor-interno">
-                            <input id="setor-interno" name="access_type" type="radio" value="setor-interno">
-                            <span class="access-icon" aria-hidden="true">
-                                <img src="assets/icons/icon-shield.svg" alt="">
-                            </span>
-                            <span class="access-copy">Setor interno</span>
-                        </label>
+            <ul class="side-feature-list">
+                <li>
+                    <span class="feature-icon">AI</span>
+                    <div>
+                        <strong>Classificacao Inteligente</strong>
+                        <p>IA analisa e categoriza demandas automaticamente com alta precisao.</p>
                     </div>
-                </fieldset>
+                </li>
+                <li>
+                    <span class="feature-icon">24</span>
+                    <div>
+                        <strong>Suporte Centralizado</strong>
+                        <p>Todos os setores em um unico lugar, com rastreamento em tempo real.</p>
+                    </div>
+                </li>
+                <li>
+                    <span class="feature-icon">OK</span>
+                    <div>
+                        <strong>Acessibilidade Total</strong>
+                        <p>Interface projetada para garantir acesso inclusivo a todos os colaboradores.</p>
+                    </div>
+                </li>
+            </ul>
 
-                <div class="field">
-                    <label for="email">Email corporativo</label>
-                    <input id="email" name="email" type="email" autocomplete="email" placeholder="nome@empresa.com" required>
+            <footer class="side-metrics">
+                <div class="metric-item">
+                    <strong>98%</strong>
+                    <span>Taxa de resolucao</span>
                 </div>
+                <div class="metric-item">
+                    <strong>&lt; 2h</strong>
+                    <span>Tempo medio</span>
+                </div>
+                <div class="metric-item">
+                    <strong>500+</strong>
+                    <span>Empresas ativas</span>
+                </div>
+            </footer>
+        </section>
 
-                <div class="field">
-                    <label for="senha">Senha</label>
-                    <div class="password-wrapper">
-                        <input id="senha" name="senha" type="password" autocomplete="current-password" placeholder="Insira sua senha" required>
-                        <button
-                            type="button"
-                            class="toggle-password"
-                            data-target="#senha"
-                            data-open-icon="assets/icons/icon-eye-open.svg"
-                            data-closed-icon="assets/icons/icon-eye-closed.svg"
-                            aria-label="Mostrar senha"
-                            aria-pressed="false"
-                        >
-                            <img
-                                src="assets/icons/icon-eye-closed.svg"
-                                alt=""
-                                class="toggle-password-icon"
-                                width="20"
-                                height="20"
+        <section class="auth-main" aria-label="Formulario de login">
+            <div class="auth-main-inner">
+                <header class="auth-head">
+                    <h2>Bem-vindo de volta</h2>
+                    <p>Nao tem uma conta? <a href="cadastro.html">Criar conta gratis</a></p>
+                </header>
+
+                <form class="login-form auth-form" action="#" method="post">
+                    <fieldset class="access-type access-type-inline">
+                        <legend>Acessar como:</legend>
+                        <div class="access-options">
+                            <label class="access-option" for="colaborador">
+                                <input id="colaborador" name="access_type" type="radio" value="colaborador" checked>
+                                <span class="access-icon" aria-hidden="true">
+                                    <img src="assets/icons/icon-person.svg" alt="">
+                                </span>
+                                <span class="access-copy">Colaborador</span>
+                            </label>
+
+                            <label class="access-option" for="setor-interno">
+                                <input id="setor-interno" name="access_type" type="radio" value="setor-interno">
+                                <span class="access-icon" aria-hidden="true">
+                                    <img src="assets/icons/icon-shield.svg" alt="">
+                                </span>
+                                <span class="access-copy">Setor Interno</span>
+                            </label>
+                        </div>
+                    </fieldset>
+
+                    <div class="field">
+                        <label for="email">Email corporativo</label>
+                        <input id="email" name="email" type="email" autocomplete="email" placeholder="seu@empresa.com" required>
+                    </div>
+
+                    <div class="field">
+                        <div class="field-head">
+                            <label for="senha">Senha</label>
+                            <a href="#" class="field-link">Esqueci minha senha</a>
+                        </div>
+                        <div class="password-wrapper">
+                            <input id="senha" name="senha" type="password" autocomplete="current-password" placeholder="Insira sua senha" required>
+                            <button
+                                type="button"
+                                class="toggle-password"
+                                data-target="#senha"
+                                data-open-icon="assets/icons/icon-eye-open.svg"
+                                data-closed-icon="assets/icons/icon-eye-closed.svg"
+                                aria-label="Mostrar senha"
+                                aria-pressed="false"
                             >
-                            <span class="sr-only">Mostrar senha</span>
-                        </button>
+                                <img
+                                    src="assets/icons/icon-eye-closed.svg"
+                                    alt=""
+                                    class="toggle-password-icon"
+                                    width="20"
+                                    height="20"
+                                >
+                                <span class="sr-only">Mostrar senha</span>
+                            </button>
+                        </div>
                     </div>
-                </div>
 
-                <div class="form-links">
-                    <a href="#">Esqueci minha senha</a>
-                    <a href="#">Precisa de ajuda para acessar?</a>
-                </div>
+                    <p class="form-message" id="login-message" role="status" aria-live="polite"></p>
 
-                <p class="form-message" id="login-message" role="status" aria-live="polite"></p>
+                    <button type="submit" class="submit-button">
+                        <span>Entrar no S.A.D</span>
+                        <span aria-hidden="true">-></span>
+                    </button>
 
-                <button type="submit" class="submit-button">
-                    Entrar
-                </button>
-
-                <p class="auth-switch">
-                    Ainda nao tem conta?
-                    <a href="cadastro.html">Criar cadastro</a>
-                </p>
-            </form>
+                    <p class="auth-footer">S.A.D (c) 2026 . Sistema de Auxilios e Demanda</p>
+                </form>
+            </div>
         </section>
     </main>
 
