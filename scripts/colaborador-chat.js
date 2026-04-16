@@ -81,9 +81,61 @@
         }).format(date);
     }
 
+    function getDemandMessage(row) {
+        return (
+            row?.mensagem ??
+            row?.message ??
+            row?.descricao ??
+            row?.demanda ??
+            row?.texto ??
+            row?.content ??
+            row?.body ??
+            null
+        );
+    }
+
+    function getDemandType(row) {
+        return row?.tipo ?? row?.categoria ?? row?.category ?? null;
+    }
+
+    function getDemandUrgency(row) {
+        return row?.urgencia ?? row?.prioridade ?? row?.priority ?? null;
+    }
+
+    function getDemandSector(row) {
+        return row?.setor_destino ?? row?.setor ?? row?.departamento ?? row?.categoria ?? null;
+    }
+
+    function rowBelongsToCurrentUser(row) {
+        if (!currentUser) {
+            return false;
+        }
+
+        const userId = String(currentUser.id || "");
+        const userEmail = String(currentUser.email || "").toLowerCase();
+        const possibleIds = [
+            row?.user_id,
+            row?.usuario_id,
+            row?.auth_user_id,
+            row?.colaborador_id,
+            row?.telefone,
+        ].filter(Boolean);
+        const possibleEmails = [
+            row?.user_email,
+            row?.email,
+            row?.colaborador_email,
+        ].filter(Boolean);
+
+        if (possibleIds.some((value) => String(value) === userId)) {
+            return true;
+        }
+
+        return possibleEmails.some((value) => String(value).toLowerCase() === userEmail);
+    }
+
     function normalizeStatus(row) {
         const rawStatus = (row?.status ?? "").toString().trim();
-        const rawTipo = (row?.tipo ?? "").toString().trim();
+        const rawTipo = (getDemandType(row) ?? "").toString().trim();
 
         if (rawStatus) {
             return rawStatus;
@@ -171,18 +223,22 @@
             head.append(date, status);
             card.appendChild(head);
 
-            const body = createElement("p", "demanda-text", row.mensagem ?? "Demanda sem descricao.");
+            const body = createElement("p", "demanda-text", getDemandMessage(row) ?? "Demanda sem descricao.");
             card.appendChild(body);
 
             const metaParts = [];
-            if (row.tipo) {
-                metaParts.push(`Tipo: ${row.tipo}`);
+            const demandType = getDemandType(row);
+            const demandUrgency = getDemandUrgency(row);
+            const demandSector = getDemandSector(row);
+
+            if (demandType) {
+                metaParts.push(`Tipo: ${demandType}`);
             }
-            if (row.urgencia) {
-                metaParts.push(`Urgencia: ${row.urgencia}`);
+            if (demandUrgency) {
+                metaParts.push(`Urgencia: ${demandUrgency}`);
             }
-            if (row.setor_destino) {
-                metaParts.push(`Setor: ${row.setor_destino}`);
+            if (demandSector) {
+                metaParts.push(`Setor: ${demandSector}`);
             }
 
             if (metaParts.length) {
@@ -234,9 +290,9 @@
         }
 
         const nowIso = new Date().toISOString();
-        const payloadVariants = [
+        const messageFieldVariants = ["mensagem", "message", "descricao", "demanda", "texto"];
+        const metadataVariants = [
             {
-                mensagem: message,
                 status: "IA analisando",
                 user_id: currentUser.id,
                 user_email: currentUser.email ?? "",
@@ -244,50 +300,41 @@
                 deficiencia: "",
                 localizacao: "",
                 urgencia: "",
-                telefone: "",
                 created_at: nowIso,
             },
             {
-                mensagem: message,
                 user_id: currentUser.id,
-                tipo: "",
-                deficiencia: "",
-                localizacao: "",
-                urgencia: "",
-                telefone: "",
-                created_at: nowIso,
-            },
-            {
-                mensagem: message,
                 user_email: currentUser.email ?? "",
-                tipo: "",
-                deficiencia: "",
-                localizacao: "",
-                urgencia: "",
-                telefone: "",
                 created_at: nowIso,
             },
             {
-                mensagem: message,
+                user_id: currentUser.id,
+                created_at: nowIso,
+            },
+            {
+                user_email: currentUser.email ?? "",
+                email: currentUser.email ?? "",
+                created_at: nowIso,
+            },
+            {
                 telefone: currentUser.id,
-                tipo: "",
-                deficiencia: "",
-                localizacao: "",
-                urgencia: "",
                 created_at: nowIso,
             },
             {
-                mensagem: message,
-                tipo: "",
-                deficiencia: "",
-                localizacao: "",
-                urgencia: "",
-                telefone: "",
+                created_at: nowIso,
             },
-            {
-                mensagem: message,
-            },
+            {},
         ];
+        const payloadVariants = [];
+
+        messageFieldVariants.forEach((fieldName) => {
+            metadataVariants.forEach((metadata) => {
+                payloadVariants.push({
+                    [fieldName]: message,
+                    ...metadata,
+                });
+            });
+        });
 
         let lastError = null;
 
@@ -318,45 +365,69 @@
             () =>
                 supabase
                     .from(DEMAND_TABLE)
-                    .select("id,mensagem,created_at,status,setor_destino,tipo,urgencia,user_id,user_email")
+                    .select("*")
                     .eq("user_id", currentUser.id)
                     .order("created_at", { ascending: false })
                     .limit(80),
             () =>
                 supabase
                     .from(DEMAND_TABLE)
-                    .select("id,mensagem,created_at,status,setor_destino,tipo,urgencia,user_email")
+                    .select("*")
+                    .eq("usuario_id", currentUser.id)
+                    .order("created_at", { ascending: false })
+                    .limit(80),
+            () =>
+                supabase
+                    .from(DEMAND_TABLE)
+                    .select("*")
                     .eq("user_email", currentUser.email ?? "")
                     .order("created_at", { ascending: false })
                     .limit(80),
             () =>
                 supabase
                     .from(DEMAND_TABLE)
-                    .select("id,mensagem,created_at,status,setor_destino,tipo,urgencia,telefone")
+                    .select("*")
+                    .eq("email", currentUser.email ?? "")
+                    .order("created_at", { ascending: false })
+                    .limit(80),
+            () =>
+                supabase
+                    .from(DEMAND_TABLE)
+                    .select("*")
+                    .eq("colaborador_email", currentUser.email ?? "")
+                    .order("created_at", { ascending: false })
+                    .limit(80),
+            () =>
+                supabase
+                    .from(DEMAND_TABLE)
+                    .select("*")
                     .eq("telefone", currentUser.id)
                     .order("created_at", { ascending: false })
                     .limit(80),
             () =>
                 supabase
                     .from(DEMAND_TABLE)
-                    .select("id,mensagem,created_at,status,setor_destino,tipo,urgencia")
-                    .order("created_at", { ascending: false })
-                    .limit(80),
-            () =>
-                supabase
-                    .from(DEMAND_TABLE)
-                    .select("id,mensagem,created_at,tipo,urgencia")
+                    .select("*")
                     .order("created_at", { ascending: false })
                     .limit(80),
         ];
 
         let lastError = null;
 
-        for (const runQuery of strategies) {
+        for (let index = 0; index < strategies.length; index += 1) {
+            const runQuery = strategies[index];
             const { data, error } = await runQuery();
 
             if (!error) {
-                return data ?? [];
+                if (!Array.isArray(data)) {
+                    return [];
+                }
+
+                if (index === strategies.length - 1) {
+                    return data.filter(rowBelongsToCurrentUser);
+                }
+
+                return data;
             }
 
             lastError = error;
@@ -377,7 +448,9 @@
                 setFeedback(demandasFeedback, "Demandas atualizadas.", "success");
             }
         } catch (error) {
-            const errorMessage = error?.message ?? "Nao foi possivel carregar suas demandas.";
+            const errorMessage = isRecoverableSchemaError(error)
+                ? "Nao consegui ler as demandas porque a tabela usa nomes de colunas diferentes do esperado."
+                : error?.message ?? "Nao foi possivel carregar suas demandas.";
             setFeedback(demandasFeedback, errorMessage, "error");
         }
     }
@@ -521,7 +594,9 @@
 
                     await loadDemandas({ silent: true });
                 } catch (error) {
-                    const messageText = error?.message ?? "Falha ao enviar demanda.";
+                    const messageText = isRecoverableSchemaError(error)
+                        ? "Nao consegui gravar a demanda porque a coluna de texto da tabela ainda nao bate com o front."
+                        : error?.message ?? "Falha ao enviar demanda.";
                     setFeedback(chatFeedback, messageText, "error");
 
                     appendChatMessage(

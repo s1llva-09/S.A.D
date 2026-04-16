@@ -3,31 +3,267 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>P.O.N.T.E | Setor Interno</title>
+    <title>S.A.D | Setor Interno</title>
     <link rel="stylesheet" href="styles/index.css">
 </head>
-<body>
-    <main class="login-page">
-        <section class="login-card" aria-labelledby="internal-title">
-            <header class="brand-block">
-                <img
-                    src="assets/logo-ponte-v5-simbolo.svg"
-                    alt="Simbolo do P.O.N.T.E"
-                    class="brand-logo"
-                    width="80"
-                    height="80"
-                >
-                <h1 id="internal-title">Setor interno</h1>
-                <p>Essa area sera estruturada na proxima etapa do projeto.</p>
+<body class="setor-page">
+    <div class="setor-shell">
+        <aside class="setor-sidebar" id="setor-sidebar">
+            <div class="setor-sidebar-brand">
+                <img src="assets/logo-ponte-v5-simbolo.svg" alt="Logo S.A.D" class="setor-brand-logo" width="44" height="44">
+                <div>
+                    <strong>S.A.D</strong>
+                    <span>Setor interno</span>
+                </div>
+            </div>
+
+            <nav class="setor-nav" aria-label="Navegacao do setor interno">
+                <button type="button" class="setor-nav-item is-active" data-panel-target="dashboard">
+                    <span>Dashboard</span>
+                    <small id="dashboard-nav-count">0</small>
+                </button>
+                <button type="button" class="setor-nav-item" data-panel-target="demandas">
+                    <span>Demandas</span>
+                    <small id="demandas-nav-count">0</small>
+                </button>
+                <button type="button" class="setor-nav-item" data-panel-target="relatorios">
+                    <span>Relatorios</span>
+                    <small id="relatorios-nav-count">0</small>
+                </button>
+            </nav>
+
+            <div class="setor-sidebar-footer">
+                <button type="button" id="sidebar-logout-button" class="setor-logout-button">Sair</button>
+                <div class="setor-user-card">
+                    <span class="setor-user-avatar" id="sidebar-user-avatar">SI</span>
+                    <div>
+                        <strong id="sidebar-user-name">Setor interno</strong>
+                        <span id="sidebar-user-email">carregando...</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <div class="setor-content">
+            <header class="setor-topbar">
+                <div class="setor-topbar-main">
+                    <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="Alternar menu lateral">+</button>
+                    <div class="setor-topbar-copy">
+                        <h1 id="page-title">Dashboard</h1>
+                        <p id="page-subtitle">Acompanhe as demandas e metricas da equipe em tempo real.</p>
+                    </div>
+                </div>
+
+                <div class="setor-topbar-actions">
+                    <div class="notification-wrap">
+                        <button type="button" class="notification-button" id="notification-button" aria-label="Abrir notificacoes">
+                            <span>Notificacoes</span>
+                            <strong id="notification-count">0</strong>
+                        </button>
+
+                        <section class="notification-panel" id="notification-panel" hidden aria-label="Painel de notificacoes">
+                            <header class="notification-panel-head">
+                                <div>
+                                    <h2>Notificacoes</h2>
+                                    <p id="notification-headline">0 novas</p>
+                                </div>
+                                <button type="button" id="mark-read-button" class="notification-link-button">Marcar todas</button>
+                            </header>
+                            <div id="notification-list" class="notification-list"></div>
+                            <button type="button" id="notification-view-demandas" class="notification-footer-button">Ver todas as demandas</button>
+                        </section>
+                    </div>
+
+                    <div class="setor-topbar-user">
+                        <span class="setor-user-avatar" id="topbar-user-avatar">SI</span>
+                        <span id="topbar-user-name">Setor interno</span>
+                    </div>
+                </div>
             </header>
 
-            <p class="form-message is-success">Seu login foi reconhecido como acesso interno.</p>
+            <main class="setor-main">
+                <section class="setor-panel is-active" data-panel="dashboard">
+                    <div class="setor-hero">
+                        <div>
+                            <h2 id="dashboard-welcome-title">Bem-vindo ao painel do setor</h2>
+                            <p id="dashboard-welcome-copy">As demandas recebidas no banco aparecem aqui em tempo real.</p>
+                        </div>
+                        <button type="button" id="dashboard-cta" class="primary-action-button">Ver todas as demandas</button>
+                    </div>
 
-            <p class="auth-switch">
-                Enquanto isso, voce pode
-                <a href="index.html">voltar para o login</a>.
-            </p>
+                    <div class="metric-grid" id="dashboard-metrics"></div>
+
+                    <div class="dashboard-grid">
+                        <article class="dashboard-card chart-card">
+                            <header class="card-head">
+                                <div>
+                                    <h3>Atividade Semanal</h3>
+                                    <p>Demandas recebidas e resolvidas nos ultimos 7 dias.</p>
+                                </div>
+                            </header>
+                            <div id="activity-chart" class="activity-chart"></div>
+                        </article>
+
+                        <article class="dashboard-card category-card">
+                            <header class="card-head">
+                                <div>
+                                    <h3>Por Categoria</h3>
+                                    <p>Distribuicao atual por setor ou tipo.</p>
+                                </div>
+                            </header>
+                            <div class="category-card-body">
+                                <div id="category-donut" class="category-donut" aria-label="Grafico por categoria"></div>
+                                <div id="category-list" class="category-list"></div>
+                            </div>
+                        </article>
+                    </div>
+
+                    <div class="dashboard-grid dashboard-grid-bottom">
+                        <article class="dashboard-card recent-card">
+                            <header class="card-head">
+                                <div>
+                                    <h3>Demandas Recentes</h3>
+                                    <p>Ultimas demandas recebidas do banco.</p>
+                                </div>
+                                <button type="button" class="inline-link-button" data-jump-panel="demandas">Ver tudo</button>
+                            </header>
+                            <div id="recent-demandas" class="recent-demandas"></div>
+                        </article>
+
+                        <div class="dashboard-stack">
+                            <article class="dashboard-card compact-card">
+                                <h3>Por Urgencia</h3>
+                                <div id="urgency-distribution" class="urgency-distribution"></div>
+                            </article>
+
+                            <article class="dashboard-card compact-card">
+                                <h3>Taxa de Resolucao</h3>
+                                <div id="resolution-rate" class="resolution-rate"></div>
+                            </article>
+
+                            <article class="dashboard-card compact-card">
+                                <h3>Colaboradores</h3>
+                                <div id="collaborator-stat" class="collaborator-stat"></div>
+                            </article>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="setor-panel" data-panel="demandas">
+                    <div class="metric-grid" id="demandas-metrics"></div>
+
+                    <section class="dashboard-card filters-card">
+                        <div id="status-tabs" class="status-tabs"></div>
+                        <div class="filters-row">
+                            <input type="search" id="demand-search" class="filter-search" placeholder="Buscar por demanda, colaborador ou protocolo">
+                            <select id="category-filter" class="filter-select">
+                                <option value="all">Todas as categorias</option>
+                            </select>
+                            <select id="sort-filter" class="filter-select">
+                                <option value="recent">Mais recentes</option>
+                                <option value="oldest">Mais antigas</option>
+                                <option value="urgent">Maior urgencia</option>
+                            </select>
+                        </div>
+                    </section>
+
+                    <p id="demandas-count" class="panel-count">0 demandas encontradas</p>
+                    <div id="sector-demandas-list" class="sector-demandas-list"></div>
+
+                    <div id="sector-demandas-empty" class="sector-empty-state" hidden>
+                        <h3>Nenhuma demanda encontrada</h3>
+                        <p>Quando o banco receber registros em `solicitacoes`, eles aparecem aqui automaticamente.</p>
+                    </div>
+                </section>
+
+                <section class="setor-panel" data-panel="relatorios">
+                    <div class="reports-grid">
+                        <article class="dashboard-card">
+                            <header class="card-head">
+                                <div>
+                                    <h3>Resumo Operacional</h3>
+                                    <p>Leitura rapida do estado atual do setor.</p>
+                                </div>
+                            </header>
+                            <div id="reports-summary" class="reports-summary"></div>
+                        </article>
+
+                        <article class="dashboard-card">
+                            <header class="card-head">
+                                <div>
+                                    <h3>Setores com Mais Volume</h3>
+                                    <p>Quais categorias concentram as demandas atuais.</p>
+                                </div>
+                            </header>
+                            <div id="reports-categories" class="reports-categories"></div>
+                        </article>
+
+                        <article class="dashboard-card">
+                            <header class="card-head">
+                                <div>
+                                    <h3>Leituras da IA</h3>
+                                    <p>Sugestoes e sinais vindos dos registros classificados.</p>
+                                </div>
+                            </header>
+                            <div id="reports-ai" class="reports-ai"></div>
+                        </article>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <div class="setor-modal-backdrop" id="detail-modal" hidden>
+        <section class="setor-modal" role="dialog" aria-modal="true" aria-labelledby="detail-modal-title">
+            <header class="setor-modal-head">
+                <div class="modal-title-group">
+                    <span class="modal-avatar" id="modal-avatar">SI</span>
+                    <div>
+                        <h2 id="detail-modal-title">Detalhes da demanda</h2>
+                        <p id="detail-modal-subtitle">Acompanhe a classificacao e atualize o status.</p>
+                    </div>
+                </div>
+                <div class="modal-head-actions">
+                    <span class="modal-status-pill" id="modal-status-pill">Pendente</span>
+                    <button type="button" class="modal-close-button" id="modal-close-button" aria-label="Fechar detalhes">X</button>
+                </div>
+            </header>
+
+            <div class="setor-modal-body">
+                <div id="modal-meta" class="modal-meta"></div>
+
+                <section class="modal-section">
+                    <h3>Descricao completa</h3>
+                    <div id="modal-description" class="modal-description"></div>
+                </section>
+
+                <section class="modal-section modal-ai-section">
+                    <h3>Analise da IA</h3>
+                    <div id="modal-ai-content" class="modal-ai-content"></div>
+                </section>
+            </div>
+
+            <footer class="setor-modal-footer">
+                <div class="modal-footer-actions">
+                    <button type="button" id="modal-start-button" class="secondary-action-button">Colocar em andamento</button>
+                    <button type="button" id="modal-resolve-button" class="primary-success-button">Marcar como concluido</button>
+                </div>
+
+                <form id="modal-response-form" class="modal-response-form">
+                    <label for="modal-response-input">Responder ao colaborador</label>
+                    <div class="modal-response-row">
+                        <input type="text" id="modal-response-input" placeholder="Escreva uma mensagem para tirar duvidas...">
+                        <button type="submit" id="modal-response-button" class="secondary-action-button">Enviar</button>
+                    </div>
+                </form>
+            </footer>
         </section>
-    </main>
+    </div>
+
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="scripts/supabase-client.js" defer></script>
+    <script src="scripts/setor-interno.js" defer></script>
 </body>
 </html>
