@@ -19,21 +19,70 @@
 
             <nav class="setor-nav" aria-label="Navegacao do setor interno">
                 <button type="button" class="setor-nav-item is-active" data-panel-target="dashboard">
-                    <span>Dashboard</span>
-                    <small id="dashboard-nav-count">0</small>
+                    <span class="setor-nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 20 20" fill="none">
+                            <rect x="2.5" y="2.5" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.8"></rect>
+                            <rect x="12.5" y="2.5" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.8"></rect>
+                            <rect x="2.5" y="12.5" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.8"></rect>
+                            <rect x="12.5" y="12.5" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.8"></rect>
+                        </svg>
+                    </span>
+                    <span class="setor-nav-label">Dashboard</span>
+                    <small id="dashboard-nav-count" hidden>0</small>
+                    <span class="setor-nav-arrow" aria-hidden="true">
+                        <svg viewBox="0 0 20 20" fill="none">
+                            <path d="M7.5 4.5L13 10L7.5 15.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                    </span>
                 </button>
                 <button type="button" class="setor-nav-item" data-panel-target="demandas">
-                    <span>Demandas</span>
-                    <small id="demandas-nav-count">0</small>
+                    <span class="setor-nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 20 20" fill="none">
+                            <path d="M6 2.75V5.25" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+                            <path d="M14 2.75V5.25" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+                            <path d="M4.5 5.25H15.5C16.3284 5.25 17 5.92157 17 6.75V15.25C17 16.0784 16.3284 16.75 15.5 16.75H4.5C3.67157 16.75 3 16.0784 3 15.25V6.75C3 5.92157 3.67157 5.25 4.5 5.25Z" stroke="currentColor" stroke-width="1.8"></path>
+                            <path d="M6.5 9.25H13.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+                            <path d="M6.5 12.25H11.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+                        </svg>
+                    </span>
+                    <span class="setor-nav-label">Demandas</span>
+                    <small id="demandas-nav-count" hidden>0</small>
+                    <span class="setor-nav-arrow" aria-hidden="true">
+                        <svg viewBox="0 0 20 20" fill="none">
+                            <path d="M7.5 4.5L13 10L7.5 15.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                    </span>
                 </button>
                 <button type="button" class="setor-nav-item" data-panel-target="relatorios">
-                    <span>Relatorios</span>
-                    <small id="relatorios-nav-count">0</small>
+                    <span class="setor-nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 20 20" fill="none">
+                            <path d="M3.5 16.5H16.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+                            <path d="M6 14.75V8.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+                            <path d="M10 14.75V5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+                            <path d="M14 14.75V10.25" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+                        </svg>
+                    </span>
+                    <span class="setor-nav-label">Relatorios</span>
+                    <small id="relatorios-nav-count" hidden>0</small>
+                    <span class="setor-nav-arrow" aria-hidden="true">
+                        <svg viewBox="0 0 20 20" fill="none">
+                            <path d="M7.5 4.5L13 10L7.5 15.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                    </span>
                 </button>
             </nav>
 
             <div class="setor-sidebar-footer">
-                <button type="button" id="sidebar-logout-button" class="setor-logout-button">Sair</button>
+                <button type="button" id="sidebar-logout-button" class="setor-logout-button">
+                    <span class="setor-logout-icon" aria-hidden="true">
+                        <svg viewBox="0 0 20 20" fill="none">
+                            <path d="M8 4.5H5.75C4.7835 4.5 4 5.2835 4 6.25V13.75C4 14.7165 4.7835 15.5 5.75 15.5H8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+                            <path d="M11 6.5L15 10L11 13.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <path d="M15 10H8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+                        </svg>
+                    </span>
+                    <span>Sair</span>
+                </button>
                 <div class="setor-user-card">
                     <span class="setor-user-avatar" id="sidebar-user-avatar">SI</span>
                     <div>
@@ -177,37 +226,64 @@
                 </section>
 
                 <section class="setor-panel" data-panel="relatorios">
-                    <div class="reports-grid">
-                        <article class="dashboard-card">
+                    <div class="reports-hero">
+                        <div>
+                            <h2>Relatorios e Analises</h2>
+                            <p>Acompanhe metricas e tendencias em tempo real</p>
+                        </div>
+                        <div class="reports-hero-actions">
+                            <span id="reports-sync-badge" class="reports-sync-badge">Atualizado agora</span>
+                            <button type="button" id="reports-refresh-button" class="primary-action-button reports-refresh-button">Atualizar</button>
+                        </div>
+                    </div>
+
+                    <div id="reports-metrics" class="reports-metric-grid"></div>
+
+                    <div class="reports-chart-grid">
+                        <article class="dashboard-card reports-chart-card">
                             <header class="card-head">
                                 <div>
-                                    <h3>Resumo Operacional</h3>
-                                    <p>Leitura rapida do estado atual do setor.</p>
+                                    <h3>Demandas por categoria</h3>
+                                    <p>Distribuicao atual por setor responsavel.</p>
                                 </div>
                             </header>
-                            <div id="reports-summary" class="reports-summary"></div>
+                            <div id="reports-category-bars" class="reports-category-bars"></div>
                         </article>
 
-                        <article class="dashboard-card">
+                        <article class="dashboard-card reports-chart-card">
                             <header class="card-head">
                                 <div>
-                                    <h3>Setores com Mais Volume</h3>
-                                    <p>Quais categorias concentram as demandas atuais.</p>
+                                    <h3>Distribuicao por urgencia</h3>
+                                    <p>Leitura do volume por nivel de criticidade.</p>
                                 </div>
                             </header>
-                            <div id="reports-categories" class="reports-categories"></div>
-                        </article>
-
-                        <article class="dashboard-card">
-                            <header class="card-head">
-                                <div>
-                                    <h3>Leituras da IA</h3>
-                                    <p>Sugestoes e sinais vindos dos registros classificados.</p>
-                                </div>
-                            </header>
-                            <div id="reports-ai" class="reports-ai"></div>
+                            <div class="reports-urgency-layout">
+                                <div id="reports-urgency-donut" class="category-donut reports-urgency-donut"></div>
+                                <div id="reports-urgency-legend" class="reports-urgency-legend"></div>
+                            </div>
                         </article>
                     </div>
+
+                    <article class="dashboard-card reports-trend-card">
+                        <header class="card-head">
+                            <div>
+                                <h3>Tendencia semanal</h3>
+                                <p>Demandas recebidas vs. resolvidas nos ultimos 7 dias.</p>
+                            </div>
+                            <span class="reports-period-pill">Ultimos 7 dias</span>
+                        </header>
+                        <div id="reports-weekly-chart" class="activity-chart reports-weekly-chart"></div>
+                    </article>
+
+                    <article class="dashboard-card reports-breakdown-card">
+                        <header class="card-head">
+                            <div>
+                                <h3>Detalhamento por categoria</h3>
+                                <p>Percentual de participacao de cada frente de atendimento.</p>
+                            </div>
+                        </header>
+                        <div id="reports-breakdown" class="reports-breakdown"></div>
+                    </article>
                 </section>
             </main>
         </div>

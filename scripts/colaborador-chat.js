@@ -1,6 +1,7 @@
 (() => {
     const supabase = window.supabaseClient;
     const DEMAND_TABLE = "solicitacoes";
+    const LOCAL_DEMAND_IDS_KEY = "sad-colaborador-demand-ids";
 
     const tabButtons = document.querySelectorAll("[data-view-target]");
     const viewPanels = document.querySelectorAll("[data-view-panel]");
@@ -25,6 +26,34 @@
     let currentUser = null;
     let refreshIntervalId = null;
     let realtimeChannel = null;
+    let localDemandIds = loadJson(LOCAL_DEMAND_IDS_KEY, []);
+
+    function loadJson(key, fallback) {
+        try {
+            const raw = window.localStorage.getItem(key);
+            return raw ? JSON.parse(raw) : fallback;
+        } catch (error) {
+            return fallback;
+        }
+    }
+
+    function persistJson(key, value) {
+        window.localStorage.setItem(key, JSON.stringify(value));
+    }
+
+    function rememberDemandId(id) {
+        if (!id) {
+            return;
+        }
+
+        const normalizedId = String(id);
+        if (localDemandIds.includes(normalizedId)) {
+            return;
+        }
+
+        localDemandIds = [...localDemandIds, normalizedId].slice(-100);
+        persistJson(LOCAL_DEMAND_IDS_KEY, localDemandIds);
+    }
 
     function setFeedback(element, message, type = "") {
         if (!element) {
@@ -95,7 +124,7 @@
     }
 
     function getDemandType(row) {
-        return row?.tipo ?? row?.categoria ?? row?.category ?? null;
+        return row?.tipo_solicitacao ?? row?.tipo ?? row?.categoria ?? row?.category ?? null;
     }
 
     function getDemandUrgency(row) {
@@ -130,11 +159,21 @@
             return true;
         }
 
+        if (row?.id && localDemandIds.includes(String(row.id))) {
+            return true;
+        }
+
         return possibleEmails.some((value) => String(value).toLowerCase() === userEmail);
     }
 
     function normalizeStatus(row) {
-        const rawStatus = (row?.status ?? "").toString().trim();
+        const rawStatus = (
+            row?.status ??
+            row?.situacao ??
+            row?.etapa ??
+            row?.status_atendimento ??
+            ""
+        ).toString().trim();
         const rawTipo = (getDemandType(row) ?? "").toString().trim();
 
         if (rawStatus) {
@@ -290,59 +329,86 @@
         }
 
         const nowIso = new Date().toISOString();
-        const messageFieldVariants = ["mensagem", "message", "descricao", "demanda", "texto"];
-        const metadataVariants = [
+        const displayName = normalizeName(currentUser);
+        const payloadVariants = [
             {
-                status: "IA analisando",
+                descricao: message,
+                tipo_solicitacao: "Solicitacao",
+                categoria: "Triagem",
+                setor: "Triagem",
+                urgencia: "Media",
                 user_id: currentUser.id,
                 user_email: currentUser.email ?? "",
-                tipo: "",
-                deficiencia: "",
-                localizacao: "",
-                urgencia: "",
+                colaborador_nome: displayName,
+                status: "Pendente",
                 created_at: nowIso,
             },
             {
+                descricao: message,
+                tipo_solicitacao: "Solicitacao",
+                categoria: "Triagem",
+                setor: "Triagem",
+                urgencia: "Media",
+                created_at: nowIso,
+            },
+            {
+                descricao: message,
+                user_id: currentUser.id,
+                user_email: currentUser.email ?? "",
+                colaborador_nome: displayName,
+                status: "Pendente",
+                created_at: nowIso,
+            },
+            {
+                descricao: message,
                 user_id: currentUser.id,
                 user_email: currentUser.email ?? "",
                 created_at: nowIso,
             },
             {
+                descricao: message,
                 user_id: currentUser.id,
                 created_at: nowIso,
             },
             {
+                descricao: message,
                 user_email: currentUser.email ?? "",
                 email: currentUser.email ?? "",
+                colaborador_nome: displayName,
                 created_at: nowIso,
             },
             {
+                descricao: message,
                 telefone: currentUser.id,
                 created_at: nowIso,
             },
             {
+                descricao: message,
                 created_at: nowIso,
             },
-            {},
+            { demanda: message, created_at: nowIso },
+            { texto: message, created_at: nowIso },
+            { message, created_at: nowIso },
+            { mensagem: message, created_at: nowIso },
+            { descricao: message },
+            { demanda: message },
+            { texto: message },
+            { message },
+            { mensagem: message },
         ];
-        const payloadVariants = [];
-
-        messageFieldVariants.forEach((fieldName) => {
-            metadataVariants.forEach((metadata) => {
-                payloadVariants.push({
-                    [fieldName]: message,
-                    ...metadata,
-                });
-            });
-        });
 
         let lastError = null;
 
         for (const payload of payloadVariants) {
-            const { error } = await supabase.from(DEMAND_TABLE).insert(payload);
+            const { data, error } = await supabase
+                .from(DEMAND_TABLE)
+                .insert(payload)
+                .select("*")
+                .single();
 
             if (!error) {
-                return;
+                rememberDemandId(data?.id);
+                return data ?? null;
             }
 
             lastError = error;

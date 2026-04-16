@@ -28,9 +28,14 @@
     const urgencyDistribution = document.querySelector("#urgency-distribution");
     const resolutionRate = document.querySelector("#resolution-rate");
     const collaboratorStat = document.querySelector("#collaborator-stat");
-    const reportsSummary = document.querySelector("#reports-summary");
-    const reportsCategories = document.querySelector("#reports-categories");
-    const reportsAi = document.querySelector("#reports-ai");
+    const reportsMetrics = document.querySelector("#reports-metrics");
+    const reportsCategoryBars = document.querySelector("#reports-category-bars");
+    const reportsUrgencyDonut = document.querySelector("#reports-urgency-donut");
+    const reportsUrgencyLegend = document.querySelector("#reports-urgency-legend");
+    const reportsWeeklyChart = document.querySelector("#reports-weekly-chart");
+    const reportsBreakdown = document.querySelector("#reports-breakdown");
+    const reportsSyncBadge = document.querySelector("#reports-sync-badge");
+    const reportsRefreshButton = document.querySelector("#reports-refresh-button");
     const statusTabs = document.querySelector("#status-tabs");
     const demandSearch = document.querySelector("#demand-search");
     const categoryFilter = document.querySelector("#category-filter");
@@ -168,6 +173,27 @@
         }).format(date);
     }
 
+    function toDate(value) {
+        if (!value) {
+            return null;
+        }
+
+        const parsed = new Date(value);
+        return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+
+    function toLocalDateKey(value) {
+        const parsed = toDate(value);
+        if (!parsed) {
+            return null;
+        }
+
+        const year = parsed.getFullYear();
+        const month = String(parsed.getMonth() + 1).padStart(2, "0");
+        const day = String(parsed.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+    }
+
     function slugify(value) {
         return String(value || "")
             .toLowerCase()
@@ -202,8 +228,17 @@
     function inferCategory(row) {
         const message = `${getDemandText(row)} ${row.deficiencia || ""} ${row.localizacao || ""}`.toLowerCase();
 
+        if (row.categoria) {
+            return titleCase(row.categoria);
+        }
+        if (row.setor) {
+            return titleCase(row.setor);
+        }
         if (row.setor_destino) {
             return titleCase(row.setor_destino);
+        }
+        if (row.tipo_solicitacao) {
+            return titleCase(row.tipo_solicitacao);
         }
         if (row.tipo) {
             return titleCase(row.tipo);
@@ -272,6 +307,17 @@
         return "Pendente";
     }
 
+    function getResolvedAt(row, status) {
+        return (
+            row?.resolved_at ||
+            row?.resolvida_em ||
+            row?.closed_at ||
+            row?.finished_at ||
+            (status === "Resolvida" ? row?.updated_at : null) ||
+            null
+        );
+    }
+
     function deriveProtocol(row, index) {
         const direct = row.protocolo || row.ticket_id || row.numero || row.codigo;
         if (direct) {
@@ -321,8 +367,14 @@
         const category = inferCategory(row);
         const urgency = inferUrgency(row);
         const status = inferStatus(row, override);
-        const aiSummary = row.resumo_ia || row.ai_summary || row.resumo;
-        const aiSuggestion = override.response || row.sugestao_ia || row.sugestao || row.resposta_ia || "";
+        const aiSummary = row.resumo_ia || row.analise_ia || row.ai_summary || row.resumo;
+        const aiSuggestion =
+            override.response ||
+            row.sugestao_ia ||
+            row.sugestao ||
+            row.resposta_ia ||
+            row.observacao_ia ||
+            "";
         const aiConfidence = Number(row.confianca || row.ai_confidence || 0);
         const priorityScore = Number(row.prioridade || row.priority_score || 0);
 
@@ -335,6 +387,8 @@
             message: getDemandText(row) || "Demanda sem descricao.",
             description: getDemandText(row) || "Demanda sem descricao.",
             createdAt: row.created_at || null,
+            updatedAt: row.updated_at || null,
+            resolvedAt: getResolvedAt(row, status),
             relativeTime: formatRelativeTime(row.created_at),
             category,
             urgency,
@@ -474,7 +528,7 @@
             baseDate.setHours(0, 0, 0, 0);
             baseDate.setDate(baseDate.getDate() - offset);
             days.push({
-                key: baseDate.toISOString().slice(0, 10),
+                key: toLocalDateKey(baseDate),
                 label: new Intl.DateTimeFormat("pt-BR", { weekday: "short" }).format(baseDate),
                 total: 0,
                 resolved: 0,
@@ -483,21 +537,54 @@
 
         const dayMap = new Map(days.map((item) => [item.key, item]));
         demands.forEach((item) => {
-            if (!item.createdAt) {
-                return;
+            const createdKey = toLocalDateKey(item.createdAt);
+            if (createdKey && dayMap.has(createdKey)) {
+                dayMap.get(createdKey).total += 1;
             }
-            const key = new Date(item.createdAt).toISOString().slice(0, 10);
-            if (!dayMap.has(key)) {
-                return;
-            }
-            const target = dayMap.get(key);
-            target.total += 1;
-            if (item.status === "Resolvida") {
-                target.resolved += 1;
+
+            const resolvedKey = toLocalDateKey(item.resolvedAt);
+            if (resolvedKey && dayMap.has(resolvedKey)) {
+                dayMap.get(resolvedKey).resolved += 1;
             }
         });
 
         return days;
+    }
+
+    function buildStatusPayloads(nextStatus) {
+        const nowIso = new Date().toISOString();
+
+        if (nextStatus === "Resolvida") {
+            return [
+                { status: nextStatus, updated_at: nowIso, resolved_at: nowIso },
+                { situacao: nextStatus, updated_at: nowIso, resolved_at: nowIso },
+                { etapa: nextStatus, updated_at: nowIso, resolved_at: nowIso },
+                { status_atendimento: nextStatus, updated_at: nowIso, resolved_at: nowIso },
+                { status: nextStatus, resolved_at: nowIso },
+                { situacao: nextStatus, resolved_at: nowIso },
+                { etapa: nextStatus, resolved_at: nowIso },
+                { status_atendimento: nextStatus, resolved_at: nowIso },
+                { status: nextStatus, updated_at: nowIso },
+                { situacao: nextStatus, updated_at: nowIso },
+                { etapa: nextStatus, updated_at: nowIso },
+                { status_atendimento: nextStatus, updated_at: nowIso },
+                { status: nextStatus },
+                { situacao: nextStatus },
+                { etapa: nextStatus },
+                { status_atendimento: nextStatus },
+            ];
+        }
+
+        return [
+            { status: nextStatus, updated_at: nowIso },
+            { situacao: nextStatus, updated_at: nowIso },
+            { etapa: nextStatus, updated_at: nowIso },
+            { status_atendimento: nextStatus, updated_at: nowIso },
+            { status: nextStatus },
+            { situacao: nextStatus },
+            { etapa: nextStatus },
+            { status_atendimento: nextStatus },
+        ];
     }
 
     function buildLinePath(values, width, height, padding) {
@@ -627,6 +714,9 @@
         dashboardNavCount.textContent = String(stats.total);
         demandasNavCount.textContent = String(stats.pending);
         relatoriosNavCount.textContent = String(stats.resolved);
+        dashboardNavCount.hidden = true;
+        relatoriosNavCount.hidden = true;
+        demandasNavCount.hidden = stats.pending === 0;
     }
 
     function renderRecentDemands(demands) {
@@ -650,30 +740,161 @@
     }
 
     function renderReports(demands, stats) {
-        const categories = computeCategoryCounts(demands).slice(0, 4);
+        if (
+            !reportsMetrics ||
+            !reportsCategoryBars ||
+            !reportsUrgencyDonut ||
+            !reportsUrgencyLegend ||
+            !reportsWeeklyChart ||
+            !reportsBreakdown
+        ) {
+            return;
+        }
+
+        const categories = computeCategoryCounts(demands);
+        const urgencyCounts = computeUrgencyCounts(demands);
+        const weeklySeries = computeWeeklySeries(demands);
+        const totalValues = weeklySeries.map((item) => item.total);
+        const resolvedValues = weeklySeries.map((item) => item.resolved);
+        const topCategory = categories[0];
+        const totalUrgency = urgencyCounts.Alta + urgencyCounts.Media + urgencyCounts.Baixa;
         const aiReady = demands.filter((item) => item.aiSummary || item.aiSuggestion).length;
-        reportsSummary.innerHTML = `
-            <div class="report-line"><strong>Total no banco</strong><span>${stats.total}</span></div>
-            <div class="report-line"><strong>Pendentes</strong><span>${stats.pending}</span></div>
-            <div class="report-line"><strong>Em andamento</strong><span>${stats.inProgress}</span></div>
-            <div class="report-line"><strong>Resolvidas</strong><span>${stats.resolved}</span></div>
-            <div class="report-line"><strong>Urgentes</strong><span>${stats.urgent}</span></div>
-        `;
 
-        reportsCategories.innerHTML = categories.length
-            ? categories.map((item) => `
-                <div class="report-line">
-                    <strong>${escapeHtml(item.label)}</strong>
-                    <span>${item.total}</span>
+        reportsMetrics.innerHTML = [
+            {
+                tone: "success",
+                icon: "◎",
+                value: `${stats.resolutionRate}%`,
+                title: "Taxa de resolucao",
+                note: `${stats.resolved} de ${stats.total} resolvidas`,
+            },
+            {
+                tone: "danger",
+                icon: "↗",
+                value: String(stats.urgent),
+                title: "Demandas urgentes",
+                note: "prioridade alta",
+            },
+            {
+                tone: "info",
+                icon: "◔",
+                value: String(stats.inProgress),
+                title: "Em andamento",
+                note: "sendo atendidas",
+            },
+            {
+                tone: "accent",
+                icon: "◌",
+                value: topCategory ? escapeHtml(topCategory.label) : "-",
+                title: "Top categoria",
+                note: topCategory ? `${topCategory.total} demanda(s)` : "sem dados ainda",
+            },
+        ].map((item) => `
+            <article class="dashboard-card reports-metric-card reports-metric-card-${item.tone}">
+                <span class="reports-metric-icon">${item.icon}</span>
+                <strong class="reports-metric-value">${item.value}</strong>
+                <span class="reports-metric-title">${item.title}</span>
+                <small class="reports-metric-note">${item.note}</small>
+            </article>
+        `).join("");
+
+        if (!categories.length) {
+            reportsCategoryBars.innerHTML = "<p>Nenhuma categoria encontrada ainda.</p>";
+        } else {
+            const maxCategory = Math.max(...categories.map((item) => item.total), 1);
+            reportsCategoryBars.innerHTML = `
+                <div class="reports-category-chart">
+                    ${categories.map((item) => `
+                        <div class="reports-category-column">
+                            <span class="reports-category-column-bar" style="height:${(item.total / maxCategory) * 180}px; background:${item.color}"></span>
+                            <strong>${item.total}</strong>
+                            <span>${escapeHtml(item.label)}</span>
+                        </div>
+                    `).join("")}
                 </div>
-            `).join("")
-            : "<p>Nenhuma categoria disponivel.</p>";
+            `;
+        }
 
-        reportsAi.innerHTML = `
-            <div class="report-line"><strong>Com analise da IA</strong><span>${aiReady}</span></div>
-            <div class="report-line"><strong>Aguardando classificacao</strong><span>${Math.max(stats.total - aiReady, 0)}</span></div>
-            <div class="report-line"><strong>Colaboradores unicos</strong><span>${stats.collaborators}</span></div>
+        if (!totalUrgency) {
+            reportsUrgencyDonut.style.background = "conic-gradient(#dfe8e4 0deg, #dfe8e4 360deg)";
+            reportsUrgencyDonut.innerHTML = "<span>0</span>";
+            reportsUrgencyLegend.innerHTML = "<p>Nenhuma urgencia registrada.</p>";
+        } else {
+            const urgencySegments = [
+                { label: "Alta", value: urgencyCounts.Alta, color: "#f44343" },
+                { label: "Media", value: urgencyCounts.Media, color: "#f59e0b" },
+                { label: "Baixa", value: urgencyCounts.Baixa, color: "#22c55e" },
+            ];
+
+            let currentAngle = 0;
+            reportsUrgencyDonut.style.background = `conic-gradient(${urgencySegments
+                .map((item) => {
+                    const angle = totalUrgency ? (item.value / totalUrgency) * 360 : 0;
+                    const segment = `${item.color} ${currentAngle}deg ${currentAngle + angle}deg`;
+                    currentAngle += angle;
+                    return segment;
+                })
+                .join(", ")})`;
+            reportsUrgencyDonut.innerHTML = `<span>${totalUrgency}</span>`;
+            reportsUrgencyLegend.innerHTML = urgencySegments.map((item) => `
+                <div class="reports-urgency-item">
+                    <strong><span class="dot" style="background:${item.color}"></span>${item.label}</strong>
+                    <span>${item.value}</span>
+                </div>
+            `).join("");
+        }
+
+        const width = 1120;
+        const height = 260;
+        const padding = 28;
+        const totalPath = buildLinePath(totalValues, width, height, padding);
+        const resolvedPath = buildLinePath(resolvedValues, width, height, padding);
+
+        reportsWeeklyChart.innerHTML = `
+            <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Tendencia semanal das demandas">
+                ${weeklySeries.map((_, index) => {
+                    const x = padding + ((width - padding * 2) / Math.max(weeklySeries.length - 1, 1)) * index;
+                    return `<line x1="${x}" y1="${padding}" x2="${x}" y2="${height - padding}" stroke="#eef2ff" stroke-width="1"></line>`;
+                }).join("")}
+                <path d="${totalPath}" fill="none" stroke="#5b63ff" stroke-width="3.4" stroke-linecap="round"></path>
+                <path d="${resolvedPath}" fill="none" stroke="#22c55e" stroke-width="3.4" stroke-linecap="round"></path>
+                ${totalValues.map((value, index) => {
+                    const x = padding + ((width - padding * 2) / Math.max(totalValues.length - 1, 1)) * index;
+                    const y = height - padding - ((height - padding * 2) * value) / Math.max(...totalValues, ...resolvedValues, 1);
+                    return `<circle cx="${x}" cy="${y}" r="5" fill="#5b63ff"></circle>`;
+                }).join("")}
+                ${resolvedValues.map((value, index) => {
+                    const x = padding + ((width - padding * 2) / Math.max(resolvedValues.length - 1, 1)) * index;
+                    const y = height - padding - ((height - padding * 2) * value) / Math.max(...totalValues, ...resolvedValues, 1);
+                    return `<circle cx="${x}" cy="${y}" r="5" fill="#22c55e"></circle>`;
+                }).join("")}
+            </svg>
+            <div class="chart-label-row">${weeklySeries.map((item) => `<span>${item.label}</span>`).join("")}</div>
+            <div class="reports-weekly-legend">
+                <span><i style="background:#5b63ff"></i>Total recebidas</span>
+                <span><i style="background:#22c55e"></i>Resolvidas</span>
+            </div>
         `;
+
+        reportsBreakdown.innerHTML = categories.length
+            ? categories.map((item) => {
+                const percent = stats.total ? Math.round((item.total / stats.total) * 100) : 0;
+                return `
+                    <div class="reports-breakdown-row">
+                        <strong>${escapeHtml(item.label)}</strong>
+                        <div class="reports-breakdown-track">
+                            <span class="reports-breakdown-fill" style="width:${percent}%; background:${item.color}"></span>
+                        </div>
+                        <span>${item.total}</span>
+                        <span>${percent}%</span>
+                    </div>
+                `;
+            }).join("")
+            : "<p>Nenhum detalhamento disponivel.</p>";
+
+        if (reportsSyncBadge) {
+            reportsSyncBadge.textContent = aiReady ? "Atualizado agora" : "Atualizado agora";
+        }
     }
 
     function renderStatusTabs(demands) {
@@ -832,6 +1053,19 @@
         return state.demands.find((item) => String(item.id) === String(id)) || null;
     }
 
+    function buildAiFallback(demand) {
+        const hints = [
+            demand.category ? `<p><strong>Categoria preliminar</strong><br>${escapeHtml(demand.category)}</p>` : "",
+            demand.urgency ? `<p><strong>Urgencia identificada</strong><br>${escapeHtml(demand.urgency)}</p>` : "",
+            demand.location ? `<p><strong>Localizacao</strong><br>${escapeHtml(demand.location)}</p>` : "",
+        ].filter(Boolean).join("");
+
+        return `
+            <p>A analise automatica ainda nao foi retornada pelo fluxo de IA.</p>
+            ${hints || "<p>Assim que o n8n concluir a classificacao, o resumo e a sugestao aparecem aqui.</p>"}
+        `;
+    }
+
     function renderModal(demand) {
         if (!demand) {
             return;
@@ -855,7 +1089,7 @@
                 ${demand.aiSuggestion ? `<p><strong>Sugestao</strong><br>${escapeHtml(demand.aiSuggestion)}</p>` : ""}
                 ${demand.tags.length ? `<p><strong>Tags</strong><br>${escapeHtml(demand.tags.join(", "))}</p>` : ""}
             `
-            : "<p>Aguardando analise do fluxo de IA no banco de dados.</p>";
+            : buildAiFallback(demand);
 
         modalStartButton.hidden = demand.status === "Em andamento" || demand.status === "Resolvida";
         modalResolveButton.hidden = demand.status === "Resolvida";
@@ -896,12 +1130,7 @@
     }
 
     async function updateDemandStatus(id, nextStatus) {
-        const payloads = [
-            { status: nextStatus },
-            { situacao: nextStatus },
-            { etapa: nextStatus },
-            { status_atendimento: nextStatus },
-        ];
+        const payloads = buildStatusPayloads(nextStatus);
 
         let lastError = null;
 
@@ -921,7 +1150,12 @@
     }
 
     async function saveDemandResponse(id, responseText) {
+        const nowIso = new Date().toISOString();
         const payloads = [
+            { resposta_setor: responseText, updated_at: nowIso },
+            { resposta: responseText, updated_at: nowIso },
+            { mensagem_retorno: responseText, updated_at: nowIso },
+            { observacao_interna: responseText, updated_at: nowIso },
             { resposta_setor: responseText },
             { resposta: responseText },
             { mensagem_retorno: responseText },
@@ -1018,6 +1252,13 @@
         dashboardCta.addEventListener("click", () => {
             setPanel("demandas");
         });
+
+        if (reportsRefreshButton) {
+            reportsRefreshButton.addEventListener("click", async () => {
+                await loadDemands();
+                showToast("Relatorios atualizados.", "success");
+            });
+        }
 
         sidebarToggle.addEventListener("click", () => {
             sidebar.classList.toggle("is-open");
