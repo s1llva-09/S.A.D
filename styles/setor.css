@@ -82,9 +82,19 @@
 .setor-logout-icon {
     width: 20px;
     height: 20px;
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     flex: 0 0 20px;
+}
+
+.setor-nav-icon img,
+.setor-nav-arrow img,
+.setor-logout-icon img {
+    width: 20px !important;
+    height: 20px !important;
+    display: block !important;
+    object-fit: contain;
 }
 
 .setor-nav-icon svg,
@@ -93,6 +103,7 @@
     width: 20px;
     height: 20px;
     display: block;
+    color: inherit;
 }
 
 .setor-nav-label {
