@@ -79,6 +79,8 @@
     const modalResponseInput = document.querySelector("#modal-response-input");
     const modalWhatsAppButton = document.querySelector("#modal-whatsapp-button");
     const toastContainer = document.querySelector("#toast-container");
+    const setorShell = document.querySelector(".setor-shell");
+    const SIDEBAR_COLLAPSED_STORAGE_KEY = "petra-setor-sidebar-collapsed";
 
     const state = {
         currentUser: null,
@@ -91,6 +93,7 @@
         selectedDemandId: null,
         refreshIntervalId: null,
         realtimeChannel: null,
+        sidebarCollapsed: loadSidebarCollapsedState(),
         overrides: loadJson(OVERRIDE_STORAGE_KEY, LEGACY_OVERRIDE_STORAGE_KEYS, {}),
         readNotifications: loadJson(READ_STORAGE_KEY, LEGACY_READ_STORAGE_KEYS, []),
     };
@@ -121,6 +124,22 @@
 
     function persistJson(key, value) {
         window.localStorage.setItem(key, JSON.stringify(value));
+    }
+
+    function loadSidebarCollapsedState() {
+        try {
+            return window.localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY) === "true";
+        } catch (error) {
+            return false;
+        }
+    }
+
+    function persistSidebarCollapsedState(value) {
+        try {
+            window.localStorage.setItem(SIDEBAR_COLLAPSED_STORAGE_KEY, String(value));
+        } catch (error) {
+            // Ignora falhas de persistencia e segue com a interacao em memoria.
+        }
     }
 
     function titleCase(value) {
@@ -492,6 +511,55 @@
         if (window.innerWidth <= 920) {
             sidebar.classList.remove("is-open");
         }
+    }
+
+    function isMobileViewport() {
+        return window.innerWidth <= 920;
+    }
+
+    function syncSidebarToggleButton() {
+        if (!sidebarToggle) {
+            return;
+        }
+
+        const sidebarVisible = isMobileViewport()
+            ? sidebar.classList.contains("is-open")
+            : !state.sidebarCollapsed;
+
+        sidebarToggle.textContent = sidebarVisible ? "-" : "+";
+        sidebarToggle.classList.toggle("is-collapsed", !sidebarVisible);
+        sidebarToggle.setAttribute("aria-expanded", String(sidebarVisible));
+        sidebarToggle.setAttribute(
+            "aria-label",
+            sidebarVisible ? "Fechar menu lateral" : "Abrir menu lateral"
+        );
+        sidebarToggle.title = sidebarVisible ? "Fechar menu lateral" : "Abrir menu lateral";
+    }
+
+    function applySidebarState() {
+        if (!setorShell || !sidebar) {
+            return;
+        }
+
+        setorShell.classList.toggle("is-sidebar-collapsed", !isMobileViewport() && state.sidebarCollapsed);
+
+        if (!isMobileViewport()) {
+            sidebar.classList.remove("is-open");
+        }
+
+        syncSidebarToggleButton();
+    }
+
+    function toggleSidebar() {
+        if (isMobileViewport()) {
+            sidebar.classList.toggle("is-open");
+            syncSidebarToggleButton();
+            return;
+        }
+
+        state.sidebarCollapsed = !state.sidebarCollapsed;
+        persistSidebarCollapsedState(state.sidebarCollapsed);
+        applySidebarState();
     }
 
     function createMetricCard(title, value, note) {
@@ -1512,6 +1580,7 @@
         dashboardWelcomeTitle.textContent = `Bem-vindo, ${displayName.split(" ")[0]}`;
         dashboardWelcomeCopy.textContent = "As demandas do banco entram aqui automaticamente para triagem e acompanhamento.";
         pageSubtitle.textContent = formatLongDate();
+        applySidebarState();
         return true;
     }
 
@@ -1539,9 +1608,9 @@
             });
         }
 
-        sidebarToggle.addEventListener("click", () => {
-            sidebar.classList.toggle("is-open");
-        });
+        sidebarToggle.addEventListener("click", toggleSidebar);
+
+        window.addEventListener("resize", applySidebarState);
 
         demandSearch.addEventListener("input", (event) => {
             state.currentSearch = event.target.value;
