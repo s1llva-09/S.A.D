@@ -305,6 +305,11 @@
                         <input type="text" id="modal-response-input" placeholder="Escreva uma mensagem para tirar duvidas...">
                         <button type="submit" id="modal-response-button" class="secondary-action-button">Enviar</button>
                     </div>
+                    <div class="modal-response-row">
+                        <button type="button" id="modal-whatsapp-button" class="secondary-action-button" style="width: 100%;" title="Enviar via WhatsApp">
+                            <span aria-hidden="true">💬</span> Enviar resposta via WhatsApp
+                        </button>
+                    </div>
                 </form>
             </footer>
         </section>
@@ -313,7 +318,10 @@
     <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="scripts/app-config.js" defer></script>
     <script src="scripts/supabase-client.js" defer></script>
+    <script src="scripts/usuarios-manager.js" defer></script>
+    <script src="scripts/whatsapp-webhook.js" defer></script>
     <script src="scripts/setor-interno.js" defer></script>
 </body>
 </html>

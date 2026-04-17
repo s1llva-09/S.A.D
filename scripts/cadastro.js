@@ -53,6 +53,15 @@
         return document.querySelector('input[name="access_type"]:checked')?.value ?? "colaborador";
     }
 
+    function normalizeRole(role) {
+        const normalized = String(role || "").trim().toLowerCase();
+        return normalized === "setor_interno" ? "setor-interno" : normalized || "colaborador";
+    }
+
+    function getDestinationForRole(role) {
+        return normalizeRole(role) === "setor-interno" ? "setor-interno.html" : "colaborador-chat.html";
+    }
+
     if (
         signupForm &&
         nameInput &&
@@ -70,7 +79,7 @@
             const email = emailInput.value.trim();
             const cargo = cargoInput.value.trim();
             const department = departmentInput.value.trim();
-            const selectedRole = getSelectedAccessType();
+            const selectedRole = normalizeRole(getSelectedAccessType());
             const password = passwordInput.value;
             const confirmPassword = confirmPasswordInput.value;
 
@@ -113,13 +122,33 @@
                 return;
             }
 
+            // Inserir usuário na tabela 'usuarios'
+            if (data.user) {
+                const { error: insertError } = await supabase
+                    .from('usuarios')
+                    .insert({
+                        user_id: data.user.id,
+                        email: email,
+                        full_name: fullName,
+                        cargo: cargo,
+                        departamento: department,
+                        role: selectedRole,
+                        ativo: true
+                    });
+
+                if (insertError) {
+                    console.error("❌ Erro ao criar registro na tabela usuarios:", insertError);
+                    // Continua mesmo com erro (usuário já foi criado no Auth)
+                }
+            }
+
             signupForm.reset();
             submitButton.disabled = false;
             submitButton.textContent = "Criar conta";
 
             if (data.session) {
                 setFormMessage(signupMessage, "Cadastro realizado com sucesso. Redirecionando...", "success");
-                window.location.href = "colaborador-chat.html";
+                window.location.href = getDestinationForRole(selectedRole);
                 return;
             }
 

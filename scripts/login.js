@@ -19,12 +19,28 @@
         }
     }
 
+    function showPasswordResetFeedbackFromUrl() {
+        const url = new URL(window.location.href);
+        const resetStatus = url.searchParams.get("reset");
+
+        if (resetStatus === "success") {
+            setFormMessage(loginMessage, "Senha atualizada com sucesso. Faca login com a nova senha.", "success");
+            url.searchParams.delete("reset");
+            window.history.replaceState({}, document.title, url.toString());
+        }
+    }
+
     function getSelectedAccessType() {
         return document.querySelector('input[name="access_type"]:checked')?.value ?? "colaborador";
     }
 
+    function normalizeRole(role) {
+        const normalized = String(role || "").trim().toLowerCase();
+        return normalized === "setor_interno" ? "setor-interno" : normalized || "colaborador";
+    }
+
     function getDestinationForRole(role) {
-        return role === "setor-interno" ? "setor-interno.html" : "colaborador-chat.html";
+        return normalizeRole(role) === "setor-interno" ? "setor-interno.html" : "colaborador-chat.html";
     }
 
     function setupPasswordToggle(button) {
@@ -52,6 +68,7 @@
     }
 
     document.querySelectorAll(".toggle-password").forEach(setupPasswordToggle);
+    showPasswordResetFeedbackFromUrl();
 
     async function redirectIfSessionExists() {
         if (!supabase) {
@@ -64,7 +81,7 @@
             return;
         }
 
-        const role = data.session.user?.user_metadata?.role ?? "colaborador";
+        const role = normalizeRole(data.session.user?.user_metadata?.role ?? "colaborador");
         window.location.href = getDestinationForRole(role);
     }
 
@@ -76,7 +93,7 @@
 
             const email = emailInput.value.trim();
             const password = passwordInput.value;
-            const selectedAccessType = getSelectedAccessType();
+            const selectedAccessType = normalizeRole(getSelectedAccessType());
 
             submitButton.disabled = true;
             submitButton.textContent = "Entrando...";
@@ -94,7 +111,7 @@
                 return;
             }
 
-            const userRole = data.user?.user_metadata?.role ?? "colaborador";
+            const userRole = normalizeRole(data.user?.user_metadata?.role ?? "colaborador");
 
             if (selectedAccessType !== userRole) {
                 await supabase.auth.signOut();

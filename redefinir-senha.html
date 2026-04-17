@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S.A.D | Recuperar senha</title>
+    <link rel="stylesheet" href="styles/index.css">
+</head>
+<body class="auth-page">
+    <main class="auth-shell signup-shell">
+        <section class="auth-side auth-side-signup" aria-label="Recuperacao de acesso">
+            <header class="side-brand">
+                <img src="assets/logo-ponte-v5-simbolo.svg" alt="Logo S.A.D" class="side-brand-logo" width="52" height="52">
+                <strong>S.A.D</strong>
+            </header>
+
+            <div class="side-copy">
+                <h1>
+                    Recupere seu acesso
+                    <span>sem sair do fluxo</span>
+                </h1>
+                <p>Envie o link de recuperacao para o email da sua conta, seja de colaborador ou do setor corporativo, e defina uma nova senha com seguranca.</p>
+            </div>
+
+            <ol class="side-steps">
+                <li class="is-active"><span>1</span>Solicite o link</li>
+                <li><span>2</span>Abra o email</li>
+                <li><span>3</span>Crie a nova senha</li>
+            </ol>
+
+            <aside class="side-note">
+                <strong>Dica rapida</strong>
+                <p>Se o link abrir e a tela continuar no modo de email, confirme se a URL de redirecionamento do Supabase aponta para esta pagina.</p>
+            </aside>
+        </section>
+
+        <section class="auth-main" aria-label="Formulario de recuperacao de senha">
+            <div class="auth-main-inner">
+                <a href="index.html" class="back-link">&lt;- Voltar ao login</a>
+
+                <header class="auth-head">
+                    <h2 id="recovery-title">Esqueci minha senha</h2>
+                    <p id="recovery-copy">Informe o email da sua conta para receber o link de recuperacao.</p>
+                </header>
+
+                <form class="auth-form" id="recovery-request-form" action="#" method="post">
+                    <div class="field">
+                        <label for="recovery-email">Email da conta</label>
+                        <input id="recovery-email" name="email" type="email" autocomplete="email" placeholder="seu@email.com" required>
+                    </div>
+
+                    <p class="form-message" id="recovery-request-message" role="status" aria-live="polite"></p>
+
+                    <button type="submit" class="submit-button" id="recovery-request-button">
+                        <span>Enviar link de recuperacao</span>
+                        <span aria-hidden="true">-></span>
+                    </button>
+                </form>
+
+                <form class="auth-form" id="recovery-update-form" action="#" method="post" hidden>
+                    <div class="field">
+                        <label for="recovery-password">Nova senha</label>
+                        <div class="password-wrapper">
+                            <input id="recovery-password" name="password" type="password" autocomplete="new-password" placeholder="Digite a nova senha" required>
+                            <button
+                                type="button"
+                                class="toggle-password"
+                                data-target="#recovery-password"
+                                data-open-icon="assets/icons/icon-eye-open.svg"
+                                data-closed-icon="assets/icons/icon-eye-closed.svg"
+                                aria-label="Mostrar senha"
+                                aria-pressed="false"
+                            >
+                                <img src="assets/icons/icon-eye-closed.svg" alt="" class="toggle-password-icon" width="20" height="20">
+                                <span class="sr-only">Mostrar senha</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="recovery-confirm-password">Confirmar nova senha</label>
+                        <div class="password-wrapper">
+                            <input id="recovery-confirm-password" name="confirm_password" type="password" autocomplete="new-password" placeholder="Repita a nova senha" required>
+                            <button
+                                type="button"
+                                class="toggle-password"
+                                data-target="#recovery-confirm-password"
+                                data-open-icon="assets/icons/icon-eye-open.svg"
+                                data-closed-icon="assets/icons/icon-eye-closed.svg"
+                                aria-label="Mostrar senha"
+                                aria-pressed="false"
+                            >
+                                <img src="assets/icons/icon-eye-closed.svg" alt="" class="toggle-password-icon" width="20" height="20">
+                                <span class="sr-only">Mostrar senha</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <p class="form-message" id="recovery-update-message" role="status" aria-live="polite"></p>
+
+                    <button type="submit" class="submit-button" id="recovery-update-button">
+                        <span>Salvar nova senha</span>
+                        <span aria-hidden="true">-></span>
+                    </button>
+                </form>
+
+                <p class="auth-footer">S.A.D (c) 2026 . Sistema de Auxilios e Demanda</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="scripts/supabase-client.js" defer></script>
+    <script src="scripts/redefinir-senha.js" defer></script>
+</body>
+</html>

@@ -1,5 +1,6 @@
 (() => {
     const supabase = window.supabaseClient;
+    const whatsappWebhook = window.sadWhatsAppWebhook;
     const DEMAND_TABLE = "solicitacoes";
     const OVERRIDE_STORAGE_KEY = "sad-setor-overrides";
     const READ_STORAGE_KEY = "sad-setor-read-notifications";
@@ -74,6 +75,7 @@
     const modalCloseButton = document.querySelector("#modal-close-button");
     const modalResponseForm = document.querySelector("#modal-response-form");
     const modalResponseInput = document.querySelector("#modal-response-input");
+    const modalWhatsAppButton = document.querySelector("#modal-whatsapp-button");
     const toastContainer = document.querySelector("#toast-container");
 
     const state = {
@@ -119,6 +121,11 @@
             .slice(0, 2)
             .map((part) => part.charAt(0).toUpperCase())
             .join("") || "SI";
+    }
+
+    function normalizeRole(role) {
+        const normalized = String(role || "").trim().toLowerCase();
+        return normalized === "setor_interno" ? "setor-interno" : normalized || "colaborador";
     }
 
     function formatRelativeTime(value) {
@@ -395,7 +402,7 @@
             status,
             location: row.localizacao || "",
             disability: row.deficiencia || "",
-            phone: row.telefone || "",
+            phone: override.phone || row.telefone || row.whatsapp || row.celular || "",
             aiSummary,
             aiSuggestion,
             aiConfidence,
@@ -1017,6 +1024,7 @@
                             ${canResolve ? `<button type="button" class="chip-button" data-action="resolve" data-id="${item.id}">Resolver</button>` : ""}
                         </div>
                         <div class="sector-card-actions">
+                            <button type="button" class="chip-button" data-action="whatsapp" data-id="${item.id}">WhatsApp</button>
                             <button type="button" class="chip-button" data-action="reply" data-id="${item.id}">Responder</button>
                             <button type="button" class="chip-button" data-action="details" data-id="${item.id}">Detalhes</button>
                         </div>
@@ -1093,6 +1101,7 @@
 
         modalStartButton.hidden = demand.status === "Em andamento" || demand.status === "Resolvida";
         modalResolveButton.hidden = demand.status === "Resolvida";
+        modalResponseForm.hidden = demand.status !== "Em andamento";
         modalResponseInput.value = getOverride(demand.id).response || "";
         detailModal.hidden = false;
     }
@@ -1111,6 +1120,195 @@
         state.selectedDemandId = null;
     }
 
+    // =====================================================
+    // FUNÇÕES PARA GERENCIAR USUÁRIOS
+    // =====================================================
+
+    /**
+     * Busca todos os usuários cadastrados da tabela 'usuarios'
+     */
+    async function fetchUsuarios() {
+        if (!supabase) {
+            throw new Error("Supabase nao carregou corretamente.");
+        }
+
+        const { data, error } = await supabase
+            .from('usuarios')
+            .select('*')
+            .eq('ativo', true)
+            .order('full_name', { ascending: true });
+
+        if (error) {
+            console.error("❌ Erro ao buscar usuários:", error);
+            throw error;
+        }
+
+        return data || [];
+    }
+
+    /**
+     * Busca apenas colaboradores (role = 'colaborador')
+     */
+    async function fetchColaboradores() {
+        if (!supabase) {
+            throw new Error("Supabase nao carregou corretamente.");
+        }
+
+        const { data, error } = await supabase
+            .from('usuarios')
+            .select('*')
+            .eq('ativo', true)
+            .eq('role', 'colaborador')
+            .order('full_name', { ascending: true });
+
+        if (error) {
+            console.error("❌ Erro ao buscar colaboradores:", error);
+            throw error;
+        }
+
+        return data || [];
+    }
+
+    /**
+     * Busca usuários de um departamento específico
+     */
+    async function fetchUsuariosPorDepartamento(departamento) {
+        if (!supabase || !departamento) {
+            throw new Error("Parâmetros inválidos.");
+        }
+
+        const { data, error } = await supabase
+            .from('usuarios')
+            .select('*')
+            .eq('ativo', true)
+            .eq('departamento', departamento)
+            .order('full_name', { ascending: true });
+
+        if (error) {
+            console.error("❌ Erro ao buscar usuários do departamento:", error);
+            throw error;
+        }
+
+        return data || [];
+    }
+
+    /**
+     * Busca colaboradores de um departamento específico
+     */
+    async function fetchColaboradoresPorDepartamento(departamento) {
+        if (!supabase || !departamento) {
+            throw new Error("Parâmetros inválidos.");
+        }
+
+        const { data, error } = await supabase
+            .from('usuarios')
+            .select('*')
+            .eq('ativo', true)
+            .eq('role', 'colaborador')
+            .eq('departamento', departamento)
+            .order('full_name', { ascending: true });
+
+        if (error) {
+            console.error("❌ Erro ao buscar colaboradores do departamento:", error);
+            throw error;
+        }
+
+        return data || [];
+    }
+
+    // =====================================================
+    // FUNÇÕES PARA ENRIQUECER DEMANDAS COM DADOS DE USUÁRIOS
+    // =====================================================
+
+    async function buscarDadosColaborador(email) {
+        if (!email || !window.usuariosManager) {
+            return null;
+        }
+        try {
+            const usuario = await window.usuariosManager.buscarPorEmail(email);
+            return usuario ? window.usuariosManager.formatarUsuario(usuario) : null;
+        } catch (error) {
+            console.error("❌ Erro ao buscar dados do colaborador:", error);
+            return null;
+        }
+    }
+
+    function demandaJaTemDadosBasicos(demand) {
+        const requesterName = String(demand?.requesterName || "").trim();
+        const requesterEmail = String(demand?.requesterEmail || demand?.user_email || demand?.email || "").trim();
+        return Boolean(requesterName && requesterEmail);
+    }
+
+    async function enriquecerDemanda(demand) {
+        if (!demand) return null;
+        const email = demand.requesterEmail || demand.user_email || demand.email || "";
+
+        if (!email || !window.usuariosManager || demandaJaTemDadosBasicos(demand)) {
+            return {
+                ...demand,
+                requesterEmail: email || demand.requesterEmail || "",
+                colaboradorValidado: false,
+            };
+        }
+
+        if (email) {
+            const dadosColaborador = await buscarDadosColaborador(email);
+            if (dadosColaborador) {
+                return {
+                    ...demand,
+                    requesterName: dadosColaborador.nome,
+                    requesterEmail: dadosColaborador.email,
+                    colaboradorCargo: dadosColaborador.cargo,
+                    colaboradorDepartamento: dadosColaborador.departamento,
+                    colaboradorAtivo: dadosColaborador.ativo === 'Ativo',
+                    colaboradorValidado: true,
+                };
+            }
+        }
+        return { ...demand, colaboradorValidado: false };
+    }
+
+    async function enriquecerDemandas(demands) {
+        if (!demands || !Array.isArray(demands)) return [];
+        try {
+            const enriquecidas = await Promise.all(demands.map(d => enriquecerDemanda(d)));
+            return enriquecidas.filter(d => d !== null);
+        } catch (error) {
+            console.error("❌ Erro ao enriquecer demandas:", error);
+            return demands;
+        }
+    }
+
+    async function validarColaborador(email) {
+        if (!email || !window.usuariosManager) return false;
+        try {
+            const usuario = await window.usuariosManager.buscarPorEmail(email);
+            return usuario !== null && usuario.role === 'colaborador';
+        } catch (error) {
+            console.error("❌ Erro ao validar colaborador:", error);
+            return false;
+        }
+    }
+
+    async function listarColaboradoresParaAutocomplete() {
+        if (!window.usuariosManager) return [];
+        try {
+            const colaboradores = await window.usuariosManager.buscarColaboradores();
+            return colaboradores.map(c => ({
+                id: c.id,
+                label: `${c.full_name} (${c.email})`,
+                value: c.email,
+                nome: c.full_name,
+                email: c.email,
+                cargo: c.cargo,
+                departamento: c.departamento,
+            }));
+        } catch (error) {
+            console.error("❌ Erro ao listar colaboradores:", error);
+            return [];
+        }
+    }
+
     async function fetchDemands() {
         if (!supabase) {
             throw new Error("Supabase nao carregou corretamente.");
@@ -1126,7 +1324,9 @@
             throw error;
         }
 
-        return (data || []).map(normalizeDemand);
+        const normalized = (data || []).map(normalizeDemand);
+        const enriquecidas = await enriquecerDemandas(normalized);
+        return enriquecidas;
     }
 
     async function updateDemandStatus(id, nextStatus) {
@@ -1180,6 +1380,58 @@
         return { persisted: false, error: lastError };
     }
 
+    async function sendWhatsAppReply(id) {
+        const demand = findDemandById(id);
+        if (!demand) {
+            showToast("Nao encontrei a demanda para responder.", "error");
+            return;
+        }
+
+        if (!whatsappWebhook?.sendMessage) {
+            showToast("O integrador de WhatsApp nao foi carregado.", "error");
+            return;
+        }
+
+        const suggestedMessage =
+            getOverride(id).response ||
+            demand.aiSuggestion ||
+            `Ola, ${demand.requesterName}. Estamos acompanhando sua demanda ${demand.protocol}.`;
+
+        const responseText = window.prompt("Digite a mensagem para enviar no WhatsApp:", suggestedMessage);
+        if (!responseText || !responseText.trim()) {
+            return;
+        }
+
+        let phone = whatsappWebhook.normalizePhone(demand.phone);
+        if (!phone) {
+            const typedPhone = window.prompt("Informe o numero de WhatsApp do colaborador com DDD:", "");
+            phone = whatsappWebhook.normalizePhone(typedPhone);
+        }
+
+        if (!phone) {
+            showToast("Nao encontrei um numero de WhatsApp valido para esta demanda.", "error");
+            return;
+        }
+
+        const payload = {
+            mensagem: responseText.trim(),
+            telefone: phone,
+            demanda_id: demand.id,
+            protocolo: demand.protocol,
+            colaborador_nome: demand.requesterName,
+            colaborador_email: demand.requesterEmail,
+            categoria: demand.category,
+            urgencia: demand.urgency,
+            status: demand.status,
+        };
+
+        await whatsappWebhook.sendMessage(payload);
+        setOverride(id, { phone, response: responseText.trim() });
+        await saveDemandResponse(id, responseText.trim());
+        await loadDemands();
+        showToast("Mensagem enviada para o webhook do WhatsApp.", "success");
+    }
+
     function renderAll() {
         const stats = computeStats(state.demands);
         renderMetricBlocks(stats);
@@ -1215,7 +1467,7 @@
         }
 
         state.currentUser = data.session.user;
-        const role = state.currentUser?.user_metadata?.role ?? "colaborador";
+        const role = normalizeRole(state.currentUser?.user_metadata?.role ?? "colaborador");
         if (role !== "setor-interno") {
             window.location.href = "colaborador-chat.html";
             return false;
@@ -1303,6 +1555,10 @@
             }
             if (action === "reply") {
                 openModal(id, true);
+                return;
+            }
+            if (action === "whatsapp") {
+                await sendWhatsAppReply(id);
                 return;
             }
 
@@ -1406,6 +1662,24 @@
                     : "Resposta salva localmente enquanto o banco nao possui coluna de retorno.",
                 result.persisted ? "success" : "error"
             );
+        });
+
+        modalWhatsAppButton?.addEventListener("click", async (event) => {
+            event.preventDefault();
+            if (!state.selectedDemandId) {
+                return;
+            }
+
+            try {
+                await sendWhatsAppReply(state.selectedDemandId);
+                openModal(state.selectedDemandId, true);
+            } catch (error) {
+                console.error("Erro ao enviar via WhatsApp:", error);
+                showToast(
+                    error.message || "Erro ao enviar mensagem via WhatsApp.",
+                    "error"
+                );
+            }
         });
 
         document.addEventListener("click", (event) => {

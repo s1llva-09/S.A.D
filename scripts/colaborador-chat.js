@@ -82,6 +82,11 @@
         return email.split("@")[0];
     }
 
+    function normalizeRole(role) {
+        const normalized = String(role || "").trim().toLowerCase();
+        return normalized === "setor_interno" ? "setor-interno" : normalized || "colaborador";
+    }
+
     function getInitials(name) {
         return name
             .split(" ")
@@ -585,7 +590,7 @@
         }
 
         currentUser = data.session.user;
-        const role = currentUser?.user_metadata?.role ?? "colaborador";
+        const role = normalizeRole(currentUser?.user_metadata?.role ?? "colaborador");
         if (role !== "colaborador") {
             window.location.href = "setor-interno.html";
             return false;
