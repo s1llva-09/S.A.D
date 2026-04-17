@@ -1,9 +1,11 @@
 (() => {
     const supabase = window.supabaseClient;
-    const whatsappWebhook = window.sadWhatsAppWebhook;
+    const whatsappWebhook = window.petraWhatsAppWebhook || window.sadWhatsAppWebhook;
     const DEMAND_TABLE = "solicitacoes";
-    const OVERRIDE_STORAGE_KEY = "sad-setor-overrides";
-    const READ_STORAGE_KEY = "sad-setor-read-notifications";
+    const OVERRIDE_STORAGE_KEY = "petra-setor-overrides";
+    const LEGACY_OVERRIDE_STORAGE_KEYS = ["sad-setor-overrides"];
+    const READ_STORAGE_KEY = "petra-setor-read-notifications";
+    const LEGACY_READ_STORAGE_KEYS = ["sad-setor-read-notifications"];
     const PANEL_TITLES = {
         dashboard: "Dashboard",
         demandas: "Demandas",
@@ -89,14 +91,29 @@
         selectedDemandId: null,
         refreshIntervalId: null,
         realtimeChannel: null,
-        overrides: loadJson(OVERRIDE_STORAGE_KEY, {}),
-        readNotifications: loadJson(READ_STORAGE_KEY, []),
+        overrides: loadJson(OVERRIDE_STORAGE_KEY, LEGACY_OVERRIDE_STORAGE_KEYS, {}),
+        readNotifications: loadJson(READ_STORAGE_KEY, LEGACY_READ_STORAGE_KEYS, []),
     };
 
-    function loadJson(key, fallback) {
+    function loadJson(key, legacyKeys, fallback) {
         try {
             const raw = window.localStorage.getItem(key);
-            return raw ? JSON.parse(raw) : fallback;
+            if (raw) {
+                return JSON.parse(raw);
+            }
+
+            for (const legacyKey of legacyKeys) {
+                const legacyRaw = window.localStorage.getItem(legacyKey);
+                if (!legacyRaw) {
+                    continue;
+                }
+
+                const parsedLegacy = JSON.parse(legacyRaw);
+                window.localStorage.setItem(key, JSON.stringify(parsedLegacy));
+                return parsedLegacy;
+            }
+
+            return fallback;
         } catch (error) {
             return fallback;
         }
@@ -979,6 +996,10 @@
         return `<span class="tag-pill" data-kind="${escapeHtml(kind)}">${escapeHtml(label)}</span>`;
     }
 
+    function canContactDemand(demand) {
+        return demand?.status === "Em andamento";
+    }
+
     function renderDemandCards() {
         const filtered = getFilteredDemands();
         demandasCount.textContent = `${filtered.length} demanda(s) encontrada(s)`;
@@ -992,6 +1013,7 @@
         demandasList.innerHTML = filtered.map((item) => {
             const canStart = item.status !== "Em andamento" && item.status !== "Resolvida";
             const canResolve = item.status !== "Resolvida";
+            const canContact = canContactDemand(item);
 
             return `
                 <article class="sector-card">
@@ -1024,8 +1046,8 @@
                             ${canResolve ? `<button type="button" class="chip-button" data-action="resolve" data-id="${item.id}">Resolver</button>` : ""}
                         </div>
                         <div class="sector-card-actions">
-                            <button type="button" class="chip-button" data-action="whatsapp" data-id="${item.id}">WhatsApp</button>
-                            <button type="button" class="chip-button" data-action="reply" data-id="${item.id}">Responder</button>
+                            ${canContact ? `<button type="button" class="chip-button" data-action="whatsapp" data-id="${item.id}">WhatsApp</button>` : ""}
+                            ${canContact ? `<button type="button" class="chip-button" data-action="reply" data-id="${item.id}">Responder</button>` : ""}
                             <button type="button" class="chip-button" data-action="details" data-id="${item.id}">Detalhes</button>
                         </div>
                     </div>
@@ -1387,6 +1409,11 @@
             return;
         }
 
+        if (!canContactDemand(demand)) {
+            showToast("Aceite o chamado antes de responder por WhatsApp.", "error");
+            return;
+        }
+
         if (!whatsappWebhook?.sendMessage) {
             showToast("O integrador de WhatsApp nao foi carregado.", "error");
             return;
@@ -1548,12 +1575,17 @@
             }
 
             const { action, id } = actionButton.dataset;
+            const demand = findDemandById(id);
 
             if (action === "details") {
                 openModal(id);
                 return;
             }
             if (action === "reply") {
+                if (!canContactDemand(demand)) {
+                    showToast("Aceite o chamado antes de responder ao colaborador.", "error");
+                    return;
+                }
                 openModal(id, true);
                 return;
             }

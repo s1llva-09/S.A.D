@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="bridge-sym" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#2D6A4F"/>
+      <stop offset="100%" stop-color="#40916C"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="128" cy="110" r="100" fill="none" stroke="url(#bridge-sym)" stroke-width="2" opacity="0.35"/>
+
+  <path d="M58 135 Q82 70 128 58 Q174 70 198 135"
+        fill="none" stroke="url(#bridge-sym)" stroke-width="3.5" stroke-linecap="round"/>
+
+  <line x1="48" y1="135" x2="208" y2="135" stroke="#2D6A4F" stroke-width="1.5" opacity="0.3" stroke-linecap="round"/>
+
+  <line x1="58" y1="127" x2="58" y2="135" stroke="#52B788" stroke-width="1.5" opacity="0.4"/>
+  <line x1="88" y1="100" x2="88" y2="135" stroke="#52B788" stroke-width="1.5" opacity="0.4"/>
+  <line x1="128" y1="78" x2="128" y2="135" stroke="#52B788" stroke-width="1.5" opacity="0.35"/>
+  <line x1="168" y1="100" x2="168" y2="135" stroke="#52B788" stroke-width="1.5" opacity="0.4"/>
+  <line x1="198" y1="127" x2="198" y2="135" stroke="#52B788" stroke-width="1.5" opacity="0.4"/>
+
+  <path d="M128 46 L130 54 L138 54 L132 59 L134 67 L128 62 L122 67 L124 59 L118 54 L126 54 Z"
+        fill="#D4A017" opacity="0.7"/>
+
+  <circle cx="54" cy="139" r="4" fill="#2D6A4F" opacity="0.7"/>
+  <circle cx="202" cy="139" r="4" fill="#40916C" opacity="0.7"/>
+</svg>

@@ -1,5 +1,8 @@
 (() => {
-    const WEBHOOK_URL = window.SAD_WHATSAPP_WEBHOOK_URL || "https://kailane.app.n8n.cloud/webhook/b30814bd-010d-4197-9508-0a4a9f417435-envia-resposta";
+    const WEBHOOK_URL =
+        window.PETRA_WHATSAPP_WEBHOOK_URL ||
+        window.SAD_WHATSAPP_WEBHOOK_URL ||
+        "https://kailane.app.n8n.cloud/webhook/b30814bd-010d-4197-9508-0a4a9f417435-envia-resposta";
 
     function normalizePhone(value) {
         return String(value || "").replace(/\D/g, "");
@@ -7,7 +10,7 @@
 
     async function sendMessage(payload) {
         if (!WEBHOOK_URL) {
-            throw new Error("Configure a URL do webhook do WhatsApp em `window.SAD_WHATSAPP_WEBHOOK_URL`.");
+            throw new Error("Configure a URL do webhook do WhatsApp em `window.PETRA_WHATSAPP_WEBHOOK_URL`.");
         }
 
         const response = await fetch(WEBHOOK_URL, {
@@ -38,11 +41,14 @@
         return parsedData;
     }
 
-    window.sadWhatsAppWebhook = {
+    const webhookApi = {
         normalizePhone,
         sendMessage,
         hasConfig() {
             return Boolean(WEBHOOK_URL);
         },
     };
+
+    window.petraWhatsAppWebhook = webhookApi;
+    window.sadWhatsAppWebhook = webhookApi;
 })();

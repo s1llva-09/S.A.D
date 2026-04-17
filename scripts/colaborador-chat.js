@@ -1,7 +1,8 @@
 (() => {
     const supabase = window.supabaseClient;
     const DEMAND_TABLE = "solicitacoes";
-    const LOCAL_DEMAND_IDS_KEY = "sad-colaborador-demand-ids";
+    const LOCAL_DEMAND_IDS_KEY = "petra-colaborador-demand-ids";
+    const LEGACY_LOCAL_DEMAND_IDS_KEYS = ["sad-colaborador-demand-ids"];
 
     const tabButtons = document.querySelectorAll("[data-view-target]");
     const viewPanels = document.querySelectorAll("[data-view-panel]");
@@ -26,12 +27,27 @@
     let currentUser = null;
     let refreshIntervalId = null;
     let realtimeChannel = null;
-    let localDemandIds = loadJson(LOCAL_DEMAND_IDS_KEY, []);
+    let localDemandIds = loadJson(LOCAL_DEMAND_IDS_KEY, LEGACY_LOCAL_DEMAND_IDS_KEYS, []);
 
-    function loadJson(key, fallback) {
+    function loadJson(key, legacyKeys, fallback) {
         try {
             const raw = window.localStorage.getItem(key);
-            return raw ? JSON.parse(raw) : fallback;
+            if (raw) {
+                return JSON.parse(raw);
+            }
+
+            for (const legacyKey of legacyKeys) {
+                const legacyRaw = window.localStorage.getItem(legacyKey);
+                if (!legacyRaw) {
+                    continue;
+                }
+
+                const parsedLegacy = JSON.parse(legacyRaw);
+                window.localStorage.setItem(key, JSON.stringify(parsedLegacy));
+                return parsedLegacy;
+            }
+
+            return fallback;
         } catch (error) {
             return fallback;
         }
@@ -93,7 +109,7 @@
             .filter(Boolean)
             .slice(0, 2)
             .map((part) => part.charAt(0).toUpperCase())
-            .join("") || "SA";
+            .join("") || "PT";
     }
 
     function formatDateTime(value) {
