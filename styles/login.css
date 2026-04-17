@@ -71,9 +71,9 @@
     width: 52px;
     height: 52px;
     border-radius: 14px;
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(177, 221, 198, 0.78);
-    box-shadow: 0 10px 22px rgba(17, 41, 35, 0.18);
+    background: rgba(0, 0, 0, 0.418);
+    align-content: center;
+    box-shadow: 0px 10px 22px rgba(140, 168, 161, 0.18);
     padding: 4px;
     filter: saturate(1.2) contrast(1.15);
 }
